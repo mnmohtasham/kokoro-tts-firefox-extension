@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "kokoro page tts",
+  "name": "Kokoro TTS - Firefox",
   "version": "1.0.0",
-  "description": "Read web pages aloud, summerize web pages with local LLM (Ollama) or cloud LLM (OpenAI)",
+  "description": "Reads web pages aloud (Kokoro TTS) and summarizes pages either using local LLM servers (supports Ollama, lm studio, llama.cpp) or cloud providers(OpenAI)",
   "permissions": [
     "activeTab",
     "storage",

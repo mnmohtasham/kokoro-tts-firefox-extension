@@ -3,7 +3,11 @@
 
   const DEFAULT_EXCLUDED = [
     'youtube.com',
+    'bilibili.com',
     'google.com/search',
+    'bing.com/search',
+    'duckduckgo.com',
+    'baidu.com/s',
   ];
 
   function extractPageText() {
@@ -146,6 +150,11 @@
       updateSummaryReadBtn(msg.state.isPlaying, msg.state.isPaused);
     } else if (msg.type === 'ptts-show-summary' && msg.result) {
       showSummaryOverlay(msg.result);
+    } else if (msg.type === 'ptts-request-extract') {
+      return Promise.resolve({
+        selectionText: window.getSelection().toString(),
+        pageText: extractPageText()
+      });
     }
     return false;
   });
@@ -337,8 +346,40 @@
     readBtn.addEventListener('click', () => {
       const selection = window.getSelection().toString().trim();
       browser.runtime.sendMessage({
-        type: 'toggle-read',
-        hasSelection: !!selection
+        type: 'toggle-read-with-text',
+        hasSelection: !!selection,
+        selectionText: selection,
+        pageText: extractPageText()
+      });
+    });
+
+    // Hover rewind/forward bar (left side of read button)
+    const seekBar = document.createElement('div');
+    seekBar.id = 'ptts-seekbar';
+    seekBar.style.cssText = 'position:absolute;right:56px;top:50%;transform:translateY(-50%);display:none;gap:6px;align-items:center;background:rgba(0,0,0,0.75);padding:6px 8px;border-radius:999px;z-index:999999;';
+    seekBar.innerHTML = `
+      <button data-d="-10" style="border:none;background:#fff;color:#333;border-radius:999px;padding:4px 8px;font-size:11px;cursor:pointer;">-10s</button>
+      <button data-d="-5" style="border:none;background:#fff;color:#333;border-radius:999px;padding:4px 8px;font-size:11px;cursor:pointer;">-5s</button>
+      <button data-d="5" style="border:none;background:#fff;color:#333;border-radius:999px;padding:4px 8px;font-size:11px;cursor:pointer;">+5s</button>
+      <button data-d="10" style="border:none;background:#fff;color:#333;border-radius:999px;padding:4px 8px;font-size:11px;cursor:pointer;">+10s</button>
+    `;
+    readBtn.appendChild(seekBar);
+
+    function showSeekBar(show) {
+      seekBar.style.display = show ? 'flex' : 'none';
+    }
+    readBtn.addEventListener('mouseenter', () => showSeekBar(true));
+    readBtn.addEventListener('mouseleave', () => showSeekBar(false));
+    seekBar.addEventListener('mouseenter', () => showSeekBar(true));
+    seekBar.addEventListener('mouseleave', () => showSeekBar(false));
+
+    seekBar.querySelectorAll('button[data-d]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const d = Number(btn.getAttribute('data-d'));
+        if (!Number.isFinite(d)) return;
+        browser.runtime.sendMessage({ type: 'seek', deltaSeconds: d });
       });
     });
 

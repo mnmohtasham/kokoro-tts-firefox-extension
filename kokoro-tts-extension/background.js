@@ -3,7 +3,12 @@ const DEFAULT_VPN = 'http://127.0.0.1:8880';
 const PREFETCH_COUNT = 2;
 
 const HEALTH_PATH = '/health';
-const VOICES_PATH = '/v1/audio/voices';
+const VOICE_PATHS = [
+  '/v1/audio/voices',
+  '/v1/voices',
+  '/api/voices',
+  '/api/tts/speakers'
+];
 const SPEECH_PATH = '/v1/audio/speech';
 
 function joinUrl(base, path) {
@@ -35,7 +40,13 @@ const state = {
   apiMode: 'lan',
   voice: 'af_jessica',
   mode: 'balanced',
-  summaryModel: '',
+  summaryProvider: 'ollama', // 'ollama' | 'lm studio' | 'llama.cpp' | 'openAI'
+  summaryModel: '', // provider-specific model (ollama: model name; lmstudio/openai: model id)
+  ollamaBaseUrl: '',
+  lmStudioBaseUrl: 'http://127.0.0.1:1234',
+  llamaCppBaseUrl: 'http://127.0.0.1:8080',
+  openaiApiKey: '',
+  openaiBaseUrl: 'https://api.openai.com',
   isPlaying: false,
   isPaused: false,
   sentences: [],
@@ -51,12 +62,31 @@ function getApiUrl(mode) {
   return mode === 'vpn' ? state.vpnUrl : state.lanUrl;
 }
 
-browser.storage.local.get(['apiMode', 'voice', 'mode', 'lanUrl', 'vpnUrl', 'summaryModel']).then((data) => {
+browser.storage.local.get([
+  'apiMode',
+  'voice',
+  'mode',
+  'lanUrl',
+  'vpnUrl',
+  'summaryProvider',
+  'summaryModel',
+  'ollamaBaseUrl',
+  'lmStudioBaseUrl',
+  'llamaCppBaseUrl',
+  'openaiApiKey',
+  'openaiBaseUrl'
+]).then((data) => {
   if (data.lanUrl) state.lanUrl = data.lanUrl;
   if (data.vpnUrl) state.vpnUrl = data.vpnUrl;
   if (data.voice) state.voice = data.voice;
   if (data.mode) state.mode = data.mode;
+  if (typeof data.summaryProvider === 'string') state.summaryProvider = data.summaryProvider;
   if (typeof data.summaryModel === 'string') state.summaryModel = data.summaryModel;
+  if (typeof data.ollamaBaseUrl === 'string') state.ollamaBaseUrl = data.ollamaBaseUrl;
+  if (typeof data.lmStudioBaseUrl === 'string' && data.lmStudioBaseUrl) state.lmStudioBaseUrl = data.lmStudioBaseUrl;
+  if (typeof data.llamaCppBaseUrl === 'string' && data.llamaCppBaseUrl) state.llamaCppBaseUrl = data.llamaCppBaseUrl;
+  if (typeof data.openaiApiKey === 'string') state.openaiApiKey = data.openaiApiKey;
+  if (typeof data.openaiBaseUrl === 'string' && data.openaiBaseUrl) state.openaiBaseUrl = data.openaiBaseUrl;
   if (data.apiMode) {
     state.apiMode = data.apiMode;
     state.apiBase = getApiUrl(data.apiMode);
@@ -69,7 +99,13 @@ browser.storage.onChanged.addListener((changes) => {
   if (changes.vpnUrl) state.vpnUrl = changes.vpnUrl.newValue;
   if (changes.voice) state.voice = changes.voice.newValue;
   if (changes.mode) state.mode = changes.mode.newValue;
+  if (changes.summaryProvider) state.summaryProvider = changes.summaryProvider.newValue || 'ollama';
   if (changes.summaryModel) state.summaryModel = changes.summaryModel.newValue || '';
+  if (changes.ollamaBaseUrl) state.ollamaBaseUrl = changes.ollamaBaseUrl.newValue || '';
+  if (changes.lmStudioBaseUrl) state.lmStudioBaseUrl = changes.lmStudioBaseUrl.newValue || 'http://127.0.0.1:1234';
+  if (changes.llamaCppBaseUrl) state.llamaCppBaseUrl = changes.llamaCppBaseUrl.newValue || 'http://127.0.0.1:8080';
+  if (changes.openaiApiKey) state.openaiApiKey = changes.openaiApiKey.newValue || '';
+  if (changes.openaiBaseUrl) state.openaiBaseUrl = changes.openaiBaseUrl.newValue || 'https://api.openai.com';
   state.apiBase = getApiUrl(state.apiMode);
 });
 
@@ -109,6 +145,8 @@ async function autoDetectApi() {
 }
 
 function getOllamaBaseUrl() {
+  const override = (state.ollamaBaseUrl || '').trim();
+  if (override) return override.replace(/\/+$/, '');
   try {
     const url = new URL(state.apiBase);
     return `${url.protocol}//${url.hostname}:11434`;
@@ -117,7 +155,7 @@ function getOllamaBaseUrl() {
   }
 }
 
-async function summarizePage(text, customPrompt) {
+async function summarizeWithOllama(text, customPrompt) {
   const ollamaBase = getOllamaBaseUrl();
   const tags = await fetchJson(`${ollamaBase}/api/tags`, {}, 5000);
   if (!tags.ok || !tags.data) throw new Error('Ollama not reachable');
@@ -184,6 +222,128 @@ async function summarizePage(text, customPrompt) {
   return { summary, model, wordCount, timeTaken };
 }
 
+async function summarizeWithOpenAICompatible(baseUrl, text, customPrompt) {
+  const base = (baseUrl || '').replace(/\/+$/, '');
+  if (!base) throw new Error('Local AI base URL not set');
+
+  const maxChars = 32000;
+  const truncated = text.length > maxChars
+    ? `${text.substring(0, maxChars)}\n\n[Text truncated...]`
+    : text;
+  const wordCount = truncated.split(/\s+/).filter((w) => w.length > 0).length;
+
+  let model = state.summaryModel;
+  if (!model) {
+    const modelsRes = await fetchJson(`${base}/v1/models`, {}, 5000);
+    const payload = modelsRes && modelsRes.data ? modelsRes.data : null;
+    const list = payload && (payload.data || payload.models || payload);
+    const arr = Array.isArray(list) ? list : [];
+    const first = arr[0] || null;
+    model = first && (first.id || first.name || first.model);
+  }
+  if (!model) throw new Error('No model available on local AI server');
+
+  const startTime = Date.now();
+  const t = withTimeout(120000);
+  let res;
+  try {
+    res = await fetch(`${base}/v1/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: 'You are a helpful assistant that summarizes text concisely.' },
+          {
+            role: 'user',
+            content: `${customPrompt || 'Summarize the following text in 100-200 words. Be concise and capture the key points:'}\n\n${truncated}`
+          }
+        ],
+        temperature: 0.2,
+        stream: false
+      }),
+      signal: t.signal
+    });
+  } finally {
+    t.cancel();
+  }
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Local AI generation failed: ${errText || res.status}`);
+  }
+  const data = await res.json();
+  const summary = data && data.choices && data.choices[0] && data.choices[0].message
+    ? data.choices[0].message.content
+    : '';
+  const timeTaken = ((Date.now() - startTime) / 1000).toFixed(1);
+  return { summary, model, wordCount, timeTaken };
+}
+
+async function summarizeWithOpenAI(text, customPrompt) {
+  const key = (state.openaiApiKey || '').trim();
+  if (!key) throw new Error('OpenAI API key not set');
+  const base = (state.openaiBaseUrl || 'https://api.openai.com').replace(/\/+$/, '');
+  const model = state.summaryModel || 'gpt-4o-mini';
+
+  const maxChars = 32000;
+  const truncated = text.length > maxChars
+    ? `${text.substring(0, maxChars)}\n\n[Text truncated...]`
+    : text;
+  const wordCount = truncated.split(/\s+/).filter((w) => w.length > 0).length;
+
+  const startTime = Date.now();
+  const t = withTimeout(120000);
+  let res;
+  try {
+    res = await fetch(`${base}/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: 'You are a helpful assistant that summarizes text concisely.' },
+          {
+            role: 'user',
+            content: `${customPrompt || 'Summarize the following text in 100-200 words. Be concise and capture the key points:'}\n\n${truncated}`
+          }
+        ],
+        temperature: 0.2
+      }),
+      signal: t.signal
+    });
+  } finally {
+    t.cancel();
+  }
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`OpenAI generation failed: ${errText || res.status}`);
+  }
+  const data = await res.json();
+  const summary = data && data.choices && data.choices[0] && data.choices[0].message
+    ? data.choices[0].message.content
+    : '';
+  const timeTaken = ((Date.now() - startTime) / 1000).toFixed(1);
+  return { summary, model, wordCount, timeTaken };
+}
+
+async function summarizePage(text, customPrompt) {
+  const provider = String(state.summaryProvider || 'ollama');
+  if (provider === 'openAI') {
+    return summarizeWithOpenAI(text, customPrompt);
+  }
+  if (provider === 'lm studio') {
+    return summarizeWithOpenAICompatible(state.lmStudioBaseUrl || 'http://127.0.0.1:1234', text, customPrompt);
+  }
+  if (provider === 'llama.cpp') {
+    return summarizeWithOpenAICompatible(state.llamaCppBaseUrl || 'http://127.0.0.1:8080', text, customPrompt);
+  }
+  return summarizeWithOllama(text, customPrompt);
+}
+
 if (browser.contextMenus) {
   browser.contextMenus.create({
     id: 'read-from-here',
@@ -226,6 +386,11 @@ function readFromSelection(tabId, selection) {
   });
 }
 
+async function requestExtractedFromContent(tabId) {
+  // Android-friendly: ask the already-injected content script for page/selection
+  return browser.tabs.sendMessage(tabId, { type: 'ptts-request-extract' });
+}
+
 if (browser.contextMenus) {
   browser.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === 'read-from-here') {
@@ -258,6 +423,42 @@ if (browser.contextMenus) {
       });
     }
   });
+}
+
+function normalizeVoicesPayload(data) {
+  if (!data) return [];
+  const arr =
+    Array.isArray(data) ? data :
+    Array.isArray(data.voices) ? data.voices :
+    Array.isArray(data.speakers) ? data.speakers :
+    Array.isArray(data.data) ? data.data :
+    [];
+  return arr.map((v) => {
+    const id = v.id || v.voice || v.name || v.speaker || v.model;
+    const name = v.name || v.label || v.id || v.voice || v.speaker;
+    return id ? { id: String(id), name: String(name || id) } : null;
+  }).filter(Boolean);
+}
+
+async function fetchVoicesAnyEndpoint() {
+  for (const p of VOICE_PATHS) {
+    try {
+      const t = withTimeout(2500);
+      let res;
+      try {
+        res = await fetch(joinUrl(state.apiBase, p), { method: 'GET', signal: t.signal });
+      } finally {
+        t.cancel();
+      }
+      if (!res.ok) continue;
+      const data = await res.json().catch(() => null);
+      const voices = normalizeVoicesPayload(data);
+      if (voices.length > 0) return voices;
+    } catch {
+      // keep trying
+    }
+  }
+  return [];
 }
 
 function splitIntoSentences(text) {
@@ -702,12 +903,23 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case 'read-selection':
       resolveTabId(message, sender).then((tabId) => {
         state.activeTabId = tabId;
-        browser.tabs.executeScript(tabId, {
-          code: `({ selection: window.getSelection().toString(), page: (${PAGE_EXTRACT_CODE}) })`
-        }).then((results) => {
-          if (results && results[0] && results[0].selection) {
-            readFromSelection(tabId, results[0].selection);
+        requestExtractedFromContent(tabId).then((payload) => {
+          if (payload && payload.selectionText) {
+            const sel = payload.selectionText;
+            const pageText = payload.pageText || '';
+            const selClean = sel.replace(/\s+/g, ' ').trim();
+            const pageClean = pageText.replace(/\s+/g, ' ');
+            const pos = selClean && pageClean ? pageClean.indexOf(selClean) : -1;
+            startReading(pos >= 0 ? pageClean.substring(pos) : sel);
           }
+        }).catch(() => {
+          browser.tabs.executeScript(tabId, {
+            code: `({ selection: window.getSelection().toString(), page: (${PAGE_EXTRACT_CODE}) })`
+          }).then((results) => {
+            if (results && results[0] && results[0].selection) {
+              readFromSelection(tabId, results[0].selection);
+            }
+          });
         });
       });
       break;
@@ -715,16 +927,19 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case 'read-page':
       resolveTabId(message, sender).then((tabId) => {
         state.activeTabId = tabId;
-        browser.tabs.executeScript(tabId, { code: PAGE_EXTRACT_CODE }).then((results) => {
-          if (results && results[0]) startReading(results[0]);
+        requestExtractedFromContent(tabId).then((payload) => {
+          if (payload && payload.pageText) startReading(payload.pageText);
+        }).catch(() => {
+          browser.tabs.executeScript(tabId, { code: PAGE_EXTRACT_CODE }).then((results) => {
+            if (results && results[0]) startReading(results[0]);
+          });
         });
       });
       break;
 
     case 'get-voices':
-      fetch(joinUrl(state.apiBase, VOICES_PATH))
-        .then((r) => r.json())
-        .then((data) => sendResponse((data && data.voices) || []))
+      fetchVoicesAnyEndpoint()
+        .then((voices) => sendResponse(voices))
         .catch(() => sendResponse([]));
       return true;
 
@@ -760,19 +975,72 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         else pauseReading();
       } else if (senderTabId) {
         state.activeTabId = senderTabId;
-        if (message.hasSelection) {
-          browser.tabs.executeScript(senderTabId, {
-            code: `({ selection: window.getSelection().toString(), page: (${PAGE_EXTRACT_CODE}) })`
-          }).then((results) => {
-            if (results && results[0] && results[0].selection) {
-              readFromSelection(senderTabId, results[0].selection);
-            }
-          });
+        requestExtractedFromContent(senderTabId).then((payload) => {
+          const selectionText = (payload && payload.selectionText) ? payload.selectionText : '';
+          const pageText = (payload && payload.pageText) ? payload.pageText : '';
+          if (message.hasSelection && selectionText) {
+            const selClean = selectionText.replace(/\s+/g, ' ').trim();
+            const pageClean = pageText.replace(/\s+/g, ' ');
+            const pos = selClean && pageClean ? pageClean.indexOf(selClean) : -1;
+            startReading(pos >= 0 ? pageClean.substring(pos) : selectionText);
+          } else if (pageText) {
+            startReading(pageText);
+          }
+        }).catch(() => {
+          if (message.hasSelection) {
+            browser.tabs.executeScript(senderTabId, {
+              code: `({ selection: window.getSelection().toString(), page: (${PAGE_EXTRACT_CODE}) })`
+            }).then((results) => {
+              if (results && results[0] && results[0].selection) {
+                readFromSelection(senderTabId, results[0].selection);
+              }
+            });
+          } else {
+            browser.tabs.executeScript(senderTabId, { code: PAGE_EXTRACT_CODE }).then((results) => {
+              if (results && results[0]) startReading(results[0]);
+            });
+          }
+        });
+      }
+      break;
+    }
+
+    case 'toggle-read-with-text': {
+      const senderTabId = sender && sender.tab && sender.tab.id;
+      if (!senderTabId) break;
+      if (state.isPlaying && state.activeTabId === senderTabId) {
+        if (state.isPaused) resumeReading();
+        else pauseReading();
+        break;
+      }
+      state.activeTabId = senderTabId;
+      const selectionText = (message.selectionText || '').trim();
+      const pageText = (message.pageText || '').trim();
+      if (message.hasSelection && selectionText) {
+        const selClean = selectionText.replace(/\s+/g, ' ').trim();
+        const pageClean = pageText.replace(/\s+/g, ' ');
+        const pos = selClean && pageClean ? pageClean.indexOf(selClean) : -1;
+        startReading(pos >= 0 ? pageClean.substring(pos) : selectionText);
+      } else if (pageText) {
+        startReading(pageText);
+      }
+      break;
+    }
+
+    case 'seek': {
+      const delta = Number(message.deltaSeconds || 0);
+      if (!state.currentAudio || !Number.isFinite(delta) || delta === 0) break;
+      try {
+        const cur = state.currentAudio.currentTime || 0;
+        const dur = state.currentAudio.duration;
+        const next = cur + delta;
+        if (Number.isFinite(dur) && dur > 0) {
+          state.currentAudio.currentTime = Math.max(0, Math.min(dur - 0.05, next));
         } else {
-          browser.tabs.executeScript(senderTabId, { code: PAGE_EXTRACT_CODE }).then((results) => {
-            if (results && results[0]) startReading(results[0]);
-          });
+          state.currentAudio.currentTime = Math.max(0, next);
         }
+      } catch {
+        // ignore
       }
       break;
     }

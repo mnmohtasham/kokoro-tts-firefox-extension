@@ -105,12 +105,55 @@
       </select>
     </div>
     <div class="row">
-      <label>Summary Model</label>
-      <select id="summaryModel">
-        <option value="">Auto (smallest / fastest)</option>
+      <label>Summarization Provider</label>
+      <select id="summaryProvider">
+        <option value="ollama">ollama</option>
+        <option value="lm studio">lm studio</option>
+        <option value="llama.cpp">llama.cpp</option>
+        <option value="openAI">openAI</option>
       </select>
     </div>
-    <p class="help">Ollama model for summarize / ask. Auto picks the smallest text model.</p>
+    <div class="row">
+      <label>Summary Model</label>
+      <select id="summaryModel">
+        <option value="">Auto (recommended)</option>
+      </select>
+    </div>
+    <p class="help">Model list depends on the selected provider. For OpenAI, you can also type a model id below.</p>
+  </div>
+
+  <div class="card">
+    <h2>Local AI</h2>
+    <div class="row">
+      <label>Ollama Base URL</label>
+      <input type="text" id="ollamaBaseUrl" placeholder="Auto (same host as Kokoro)">
+    </div>
+    <div class="row">
+      <label>LM Studio Base URL</label>
+      <input type="text" id="lmStudioBaseUrl" value="http://127.0.0.1:1234">
+    </div>
+    <div class="row">
+      <label>llama.cpp Base URL</label>
+      <input type="text" id="llamaCppBaseUrl" value="http://127.0.0.1:8080">
+    </div>
+    <p class="help">Both should be OpenAI-compatible servers (provide <code>/v1/chat/completions</code>). Defaults match common ports; you can override them here.</p>
+  </div>
+
+  <div class="card" id="openaiCard">
+    <h2>OpenAI</h2>
+    <div class="row">
+      <label>API Key</label>
+      <input type="password" id="openaiApiKey" placeholder="sk-...">
+    </div>
+    <div class="row">
+      <label>Base URL</label>
+      <input type="text" id="openaiBaseUrl" value="https://api.openai.com">
+    </div>
+    <div class="row">
+      <label>Model (optional)</label>
+      <input type="text" id="openaiModel" placeholder="e.g. gpt-4o-mini">
+    </div>
+    <p class="help">Your key is stored in the browser's extension storage on this device.</p>
   </div>
 
   <div class="card">
