@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Page TTS Options</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #f5f7fa;
+      color: #333;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #0095ff, #7b2ff7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .card h2 { font-size: 16px; margin-bottom: 15px; color: #666; }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .row:last-child { border-bottom: none; }
+    label { font-size: 14px; }
+    input, select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    input[type="text"] { width: 200px; }
+    .help { font-size: 12px; color: #888; margin-top: 5px; }
+    .status { display: flex; align-items: center; gap: 8px; }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00c853;
+    }
+    .status-dot.offline { background: #ff5252; }
+    button {
+      padding: 10px 20px;
+      background: linear-gradient(90deg, #0095ff, #7b2ff7);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { opacity: 0.9; }
+    .saved {
+      color: #00c853;
+      font-size: 14px;
+      margin-left: 10px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .saved.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <h1>Page TTS Options</h1>
+
+  <div class="card">
+    <h2>API Endpoints</h2>
+    <div class="row">
+      <label>IP1 Address</label>
+      <input type="text" id="lanUrl" value="http://127.0.0.1:8880">
+    </div>
+    <div class="row">
+      <label>IP2 Address</label>
+      <input type="text" id="vpnUrl" value="http://127.0.0.1:8880">
+    </div>
+    <p class="help">Kokoro TTS server base URL (no trailing slash required)</p>
+  </div>
+
+  <div class="card">
+    <h2>Default Settings</h2>
+    <div class="row">
+      <label>Default Voice</label>
+      <select id="defaultVoice">
+        <option value="">Loading voices...</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Default Mode</label>
+      <select id="defaultMode">
+        <option value="fast">Fast</option>
+        <option value="balanced" selected>Balanced</option>
+        <option value="quality">Quality</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Summary Model</label>
+      <select id="summaryModel">
+        <option value="">Auto (smallest / fastest)</option>
+      </select>
+    </div>
+    <p class="help">Ollama model for summarize / ask. Auto picks the smallest text model.</p>
+  </div>
+
+  <div class="card">
+    <h2>Excluded Sites</h2>
+    <p class="help" style="margin-bottom:10px;">Floating buttons are hidden when the URL contains a line pattern (e.g. youtube.com).</p>
+    <textarea id="excludedSites" rows="6" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:monospace;resize:vertical;"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>Connection Status</h2>
+    <div class="row">
+      <label>IP1</label>
+      <div class="status">
+        <span class="status-dot" id="lanStatus"></span>
+        <span id="lanStatusText">Checking...</span>
+      </div>
+    </div>
+    <div class="row">
+      <label>IP2</label>
+      <div class="status">
+        <span class="status-dot" id="vpnStatus"></span>
+        <span id="vpnStatusText">Checking...</span>
+      </div>
+    </div>
+    <button id="testBtn" style="margin-top: 15px;">Test Connections</button>
+  </div>
+
+  <div style="text-align: center;">
+    <button id="saveBtn">Save Settings</button>
+    <span class="saved" id="savedMsg">Saved!</span>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

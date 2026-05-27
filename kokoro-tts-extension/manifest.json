@@ -1,0 +1,44 @@
+{
+  "manifest_version": 2,
+  "name": "kokoro page tts",
+  "version": "1.0.0",
+  "description": "Read web pages aloud, summerize web pages with local LLM (Ollama) or cloud LLM (OpenAI)",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "<all_urls>"
+  ],
+  "icons": {
+    "48": "icon.svg",
+    "96": "icon.svg"
+  },
+  "browser_action": {
+    "default_icon": "icon.svg",
+    "default_popup": "popup.html",
+    "default_title": "Page TTS"
+  },
+  "background": {
+    "page": "background.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "mani@selfhostapps.com",
+      "strict_min_version": "113.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
+}
