@@ -10,8 +10,6 @@ function init() {
   elements.lanLabel = document.getElementById('lanLabel');
   elements.vpnLabel = document.getElementById('vpnLabel');
   elements.nowPlaying = document.getElementById('nowPlaying');
-  elements.idleMessage = document.getElementById('idleMessage');
-  elements.currentText = document.getElementById('currentText');
   elements.progressCurrent = document.getElementById('progressCurrent');
   elements.progressTotal = document.getElementById('progressTotal');
   elements.progressFill = document.getElementById('progressFill');
@@ -172,8 +170,6 @@ function updateUI(state) {
 
   if (state.isPlaying && state.totalSentences > 0) {
     elements.nowPlaying.style.display = 'block';
-    elements.idleMessage.style.display = 'none';
-    elements.currentText.textContent = state.currentText || 'Loading...';
     elements.progressCurrent.textContent = state.currentIndex + 1;
     elements.progressTotal.textContent = state.totalSentences;
     elements.progressFill.style.width = `${((state.currentIndex + 1) / state.totalSentences) * 100}%`;
@@ -181,7 +177,9 @@ function updateUI(state) {
     elements.pauseIcon.style.display = state.isPaused ? 'none' : 'block';
   } else {
     elements.nowPlaying.style.display = 'none';
-    elements.idleMessage.style.display = 'block';
+    elements.progressFill.style.width = '0%';
+    elements.progressCurrent.textContent = '0';
+    elements.progressTotal.textContent = '0';
     elements.playIcon.style.display = 'block';
     elements.pauseIcon.style.display = 'none';
   }

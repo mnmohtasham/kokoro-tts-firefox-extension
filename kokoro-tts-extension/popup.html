@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { width: 336px; }
+    html { width: 320px; }
     body {
-      width: 336px;
+      width: 320px;
       min-height: 120px;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color: #eaf0ff;
-      padding: 14px;
+      padding: 12px;
       background:
         radial-gradient(1200px 600px at -10% -20%, rgba(120, 119, 198, 0.55), transparent 60%),
         radial-gradient(900px 500px at 110% 0%, rgba(56, 189, 248, 0.35), transparent 55%),
@@ -37,7 +37,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .header h1 {
       font-size: 13px;
@@ -48,27 +48,12 @@
       align-items: center;
       gap: 8px;
     }
-    .app-badge {
+    .app-icon {
       width: 18px;
       height: 18px;
       border-radius: 6px;
-      background: linear-gradient(135deg, var(--brandA), var(--brandB));
-      box-shadow: 0 6px 16px rgba(56,189,248,0.25);
-      position: relative;
-      overflow: hidden;
-    }
-    .app-badge::after {
-      content: '';
-      position: absolute;
-      inset: -40%;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6), transparent 40%);
-      transform: rotate(20deg);
-      opacity: 0.75;
-      animation: sheen 4s linear infinite;
-    }
-    @keyframes sheen {
-      0% { transform: translateX(-20%) rotate(20deg); }
-      100% { transform: translateX(20%) rotate(20deg); }
+      display: inline-block;
+      filter: drop-shadow(0 10px 22px rgba(56,189,248,0.22));
     }
     .header-right {
       display: flex;
@@ -96,8 +81,8 @@
       background: linear-gradient(180deg, var(--card2), var(--card));
       border-radius: 14px;
       border: 1px solid var(--stroke);
-      padding: 12px;
-      margin-bottom: 10px;
+      padding: 10px;
+      margin-bottom: 8px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
@@ -135,14 +120,6 @@
     .switch input:checked + .slider { background: linear-gradient(135deg, rgba(251,113,133,0.95), rgba(167,139,250,0.95)); }
     .switch input:checked + .slider::before { transform: translateX(18px); }
     .now-playing { display: none; }
-    .current-text {
-      font-size: 13px;
-      color: rgba(234,240,255,0.92);
-      margin-bottom: 8px;
-      max-height: 40px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
     .progress-bar {
       height: 4px;
       background: rgba(255,255,255,0.12);
@@ -158,12 +135,6 @@
       transition: width 0.3s;
     }
     .progress-text { font-size: 11px; color: rgba(234,240,255,0.55); text-align: right; }
-    .idle-message {
-      text-align: center;
-      color: rgba(234,240,255,0.55);
-      font-size: 13px;
-      padding: 8px 0;
-    }
     .controls {
       display: flex;
       align-items: center;
@@ -307,7 +278,7 @@
 </head>
 <body>
   <div class="header">
-    <h1><span class="app-badge"></span>Page TTS</h1>
+    <h1><img class="app-icon" src="icon.svg" alt="" />TTS Reader</h1>
     <div class="header-right">
       <div class="status">
         <span class="status-dot" id="statusDot"></span>
@@ -362,7 +333,6 @@
 
   <div class="card">
     <div id="nowPlaying" class="now-playing">
-      <div id="currentText" class="current-text">Loading...</div>
       <div class="progress-bar">
         <div id="progressFill" class="progress-fill"></div>
       </div>
@@ -370,26 +340,6 @@
         <span id="progressCurrent">0</span> / <span id="progressTotal">0</span>
       </div>
     </div>
-    <div id="idleMessage" class="idle-message">Select text or a page to read aloud</div>
-  </div>
-
-  <div class="card">
-    <div class="actions">
-      <button id="readPageBtn">Read Page</button>
-      <button id="summarizeBtn" class="summarize-btn">Summarize Page</button>
-    </div>
-    <div id="summaryLoading" class="summary-loading" style="display:none;">
-      <span class="spinner"></span>Summarizing...
-    </div>
-    <div id="summaryResult" class="summary-result">
-      <div id="summaryText" class="summary-text"></div>
-      <div id="summaryModel" class="summary-model"></div>
-      <div class="summary-actions">
-        <button id="readSummaryBtn">Read Aloud</button>
-        <button id="copySummaryBtn">Copy</button>
-      </div>
-    </div>
-    <div id="summaryError" class="summary-error" style="display:none;"></div>
   </div>
 
   <div class="card">
@@ -406,6 +356,25 @@
         <option value="quality">Quality</option>
       </select>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="actions">
+      <button id="readPageBtn">Read Page</button>
+      <button id="summarizeBtn" class="summarize-btn">Summarize</button>
+    </div>
+    <div id="summaryLoading" class="summary-loading" style="display:none;">
+      <span class="spinner"></span>Summarizing...
+    </div>
+    <div id="summaryResult" class="summary-result">
+      <div id="summaryText" class="summary-text"></div>
+      <div id="summaryModel" class="summary-model"></div>
+      <div class="summary-actions">
+        <button id="readSummaryBtn">Read Aloud</button>
+        <button id="copySummaryBtn">Copy</button>
+      </div>
+    </div>
+    <div id="summaryError" class="summary-error" style="display:none;"></div>
   </div>
 
   <div class="card" id="gpuCard" style="display:none;">
