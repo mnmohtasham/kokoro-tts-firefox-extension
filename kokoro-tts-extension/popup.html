@@ -4,14 +4,34 @@
   <meta charset="UTF-8">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { width: 320px; }
+    html { width: 336px; }
     body {
-      width: 320px;
-      min-height: 100px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f7fa;
-      color: #333;
-      padding: 16px;
+      width: 336px;
+      min-height: 120px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: #eaf0ff;
+      padding: 14px;
+      background:
+        radial-gradient(1200px 600px at -10% -20%, rgba(120, 119, 198, 0.55), transparent 60%),
+        radial-gradient(900px 500px at 110% 0%, rgba(56, 189, 248, 0.35), transparent 55%),
+        radial-gradient(800px 500px at 50% 120%, rgba(236, 72, 153, 0.25), transparent 60%),
+        linear-gradient(180deg, #0b1220, #070a12);
+      overflow: hidden;
+    }
+
+    :root {
+      --card: rgba(255,255,255,0.06);
+      --card2: rgba(255,255,255,0.08);
+      --stroke: rgba(255,255,255,0.12);
+      --muted: rgba(234,240,255,0.72);
+      --muted2: rgba(234,240,255,0.55);
+      --brandA: #38bdf8;
+      --brandB: #a78bfa;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
     }
     .header {
       display: flex;
@@ -20,12 +40,35 @@
       margin-bottom: 12px;
     }
     .header h1 {
-      font-size: 16px;
-      background: linear-gradient(90deg, #0095ff, #7b2ff7);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      -webkit-text-fill-color: transparent;
+      font-size: 13px;
+      letter-spacing: 0.4px;
+      font-weight: 700;
+      color: #eaf0ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .app-badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--brandA), var(--brandB));
+      box-shadow: 0 6px 16px rgba(56,189,248,0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    .app-badge::after {
+      content: '';
+      position: absolute;
+      inset: -40%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6), transparent 40%);
+      transform: rotate(20deg);
+      opacity: 0.75;
+      animation: sheen 4s linear infinite;
+    }
+    @keyframes sheen {
+      0% { transform: translateX(-20%) rotate(20deg); }
+      100% { transform: translateX(20%) rotate(20deg); }
     }
     .header-right {
       display: flex;
@@ -36,36 +79,27 @@
       width: 22px;
       height: 22px;
       border: none;
-      background: none;
+      background: transparent;
       cursor: pointer;
       font-size: 14px;
-      color: #bbb;
-      transition: color 0.2s, transform 0.2s;
+      color: var(--muted2);
+      transition: transform 0.18s ease, color 0.18s ease;
       padding: 0;
       line-height: 1;
     }
-    .pin-btn:hover { color: #7b2ff7; }
-    .pin-btn.pinned { color: #7b2ff7; transform: rotate(45deg); }
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #666;
-    }
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #00c853;
-    }
-    .status-dot.offline { background: #ff5252; }
+    .pin-btn:hover { color: #fff; transform: translateY(-1px); }
+    .pin-btn.pinned { color: #fff; transform: rotate(45deg); }
+    .status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px rgba(34,197,94,0.12); }
+    .status-dot.offline { background: #fb7185; box-shadow: 0 0 0 4px rgba(251,113,133,0.14); }
     .card {
-      background: white;
-      border-radius: 10px;
+      background: linear-gradient(180deg, var(--card2), var(--card));
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
       padding: 12px;
       margin-bottom: 10px;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
     }
     .network-toggle {
       display: flex;
@@ -74,17 +108,18 @@
       gap: 10px;
       font-size: 13px;
     }
-    .network-toggle span { color: #999; transition: color 0.2s; }
-    .network-toggle span.active { color: #333; font-weight: 600; }
+    .network-toggle span { color: var(--muted2); transition: color 0.18s ease; }
+    .network-toggle span.active { color: #fff; font-weight: 650; }
     .switch { position: relative; width: 40px; height: 22px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
       position: absolute;
       inset: 0;
-      background: #0095ff;
+      background: linear-gradient(135deg, rgba(56,189,248,0.9), rgba(167,139,250,0.9));
       border-radius: 22px;
       cursor: pointer;
       transition: background 0.3s;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
     }
     .slider::before {
       content: '';
@@ -97,12 +132,12 @@
       border-radius: 50%;
       transition: transform 0.3s;
     }
-    .switch input:checked + .slider { background: #7b2ff7; }
+    .switch input:checked + .slider { background: linear-gradient(135deg, rgba(251,113,133,0.95), rgba(167,139,250,0.95)); }
     .switch input:checked + .slider::before { transform: translateX(18px); }
     .now-playing { display: none; }
     .current-text {
       font-size: 13px;
-      color: #555;
+      color: rgba(234,240,255,0.92);
       margin-bottom: 8px;
       max-height: 40px;
       overflow: hidden;
@@ -110,21 +145,22 @@
     }
     .progress-bar {
       height: 4px;
-      background: #eee;
+      background: rgba(255,255,255,0.12);
       border-radius: 2px;
       margin-bottom: 6px;
+      overflow: hidden;
     }
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #0095ff, #7b2ff7);
+      background: linear-gradient(90deg, rgba(56,189,248,0.95), rgba(167,139,250,0.95));
       border-radius: 2px;
       width: 0%;
       transition: width 0.3s;
     }
-    .progress-text { font-size: 11px; color: #999; text-align: right; }
+    .progress-text { font-size: 11px; color: rgba(234,240,255,0.55); text-align: right; }
     .idle-message {
       text-align: center;
-      color: #999;
+      color: rgba(234,240,255,0.55);
       font-size: 13px;
       padding: 8px 0;
     }
@@ -138,49 +174,53 @@
     .controls button {
       width: 36px;
       height: 36px;
-      border: none;
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 50%;
-      background: #f0f0f0;
+      background: rgba(255,255,255,0.08);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 14px;
-      color: #555;
-      transition: background 0.2s;
+      color: #fff;
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
     }
-    .controls button:hover { background: #e0e0e0; }
+    .controls button:hover { transform: translateY(-1px); background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.18); }
+    .controls button:active { transform: translateY(0px) scale(0.98); }
     .controls button.primary {
       width: 44px;
       height: 44px;
-      background: linear-gradient(135deg, #0095ff, #7b2ff7);
+      background: linear-gradient(135deg, var(--brandA), var(--brandB));
       color: white;
       font-size: 18px;
+      border: 0;
+      box-shadow: 0 14px 28px rgba(56,189,248,0.18);
     }
-    .controls button.primary:hover { opacity: 0.9; }
     .actions { display: flex; gap: 8px; }
     .actions button {
       flex: 1;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background: white;
+      padding: 9px 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.07);
       cursor: pointer;
       font-size: 12px;
-      color: #555;
-      transition: all 0.2s;
+      color: #fff;
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
     }
-    .actions button:hover { border-color: #0095ff; color: #0095ff; }
+    .actions button:hover { transform: translateY(-1px); background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.22); }
     .settings { display: flex; gap: 8px; }
     .settings select {
       flex: 1;
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px;
       font-size: 12px;
-      background: white;
-      color: #333;
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      outline: none;
     }
+    .settings select:focus { border-color: rgba(56,189,248,0.45); box-shadow: 0 0 0 4px rgba(56,189,248,0.12); }
     .gpu-stats {
       display: flex;
       align-items: center;
@@ -192,8 +232,8 @@
     .gpu-bar {
       flex: 1;
       height: 6px;
-      background: #eee;
-      border-radius: 3px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
       overflow: hidden;
     }
     .gpu-bar-fill {
@@ -204,7 +244,7 @@
       transition: width 0.5s;
     }
     .gpu-bar-fill.high { background: linear-gradient(90deg, #ffab00, #ff5252); }
-    .gpu-text { white-space: nowrap; min-width: 70px; text-align: right; }
+    .gpu-text { white-space: nowrap; min-width: 70px; text-align: right; color: rgba(234,240,255,0.75); }
     .summarize-btn {
       width: 100%;
       padding: 8px;
@@ -221,41 +261,42 @@
     .summary-result { display: none; margin-top: 10px; }
     .summary-text {
       font-size: 12px;
-      color: #444;
+      color: rgba(234,240,255,0.92);
       line-height: 1.5;
       max-height: 200px;
       overflow-y: auto;
-      padding: 8px;
-      background: #f9f9fb;
-      border-radius: 6px;
-      border: 1px solid #eee;
+      padding: 10px;
+      background: rgba(0,0,0,0.18);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
     }
-    .summary-model { font-size: 10px; color: #aaa; margin-top: 4px; }
+    .summary-model { font-size: 10px; color: rgba(234,240,255,0.55); margin-top: 6px; }
     .summary-actions { margin-top: 8px; display: flex; gap: 8px; }
     .summary-actions button {
       flex: 1;
-      padding: 6px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      background: white;
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.07);
       cursor: pointer;
       font-size: 11px;
-      color: #555;
+      color: #fff;
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
     }
-    .summary-actions button:hover { border-color: #0095ff; color: #0095ff; }
-    .summary-error { font-size: 12px; color: #ff5252; padding: 8px; }
+    .summary-actions button:hover { transform: translateY(-1px); background: rgba(255,255,255,0.10); border-color: rgba(56,189,248,0.35); }
+    .summary-error { font-size: 12px; color: #fb7185; padding: 8px; }
     .summary-loading {
       text-align: center;
       font-size: 12px;
-      color: #999;
+      color: rgba(234,240,255,0.65);
       padding: 12px 0;
     }
     .spinner {
       display: inline-block;
       width: 14px;
       height: 14px;
-      border: 2px solid #ddd;
-      border-top-color: #7b2ff7;
+      border: 2px solid rgba(255,255,255,0.18);
+      border-top-color: rgba(56,189,248,0.95);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       vertical-align: middle;
@@ -266,7 +307,7 @@
 </head>
 <body>
   <div class="header">
-    <h1>Page TTS</h1>
+    <h1><span class="app-badge"></span>Page TTS</h1>
     <div class="header-right">
       <div class="status">
         <span class="status-dot" id="statusDot"></span>
@@ -288,13 +329,35 @@
   </div>
 
   <div class="controls">
-    <button id="prevBtn" title="Previous">&#9664;&#9664;</button>
-    <button id="playPauseBtn" class="primary" title="Play / Pause">
-      <span id="playIcon">&#9654;</span>
-      <span id="pauseIcon" style="display:none;">&#9646;&#9646;</span>
+    <button id="prevBtn" title="Previous">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M7 6v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M18 6l-7 6 7 6V6z" fill="currentColor"/>
+      </svg>
     </button>
-    <button id="stopBtn" title="Stop">&#9632;</button>
-    <button id="nextBtn" title="Next">&#9654;&#9654;</button>
+    <button id="playPauseBtn" class="primary" title="Play / Pause">
+      <span id="playIcon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M9 7l10 5-10 5V7z" fill="currentColor"/>
+        </svg>
+      </span>
+      <span id="pauseIcon" style="display:none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M7 5h4v14H7V5zm6 0h4v14h-4V5z" fill="currentColor"/>
+        </svg>
+      </span>
+    </button>
+    <button id="stopBtn" title="Stop">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M7 7h10v10H7V7z" fill="currentColor"/>
+      </svg>
+    </button>
+    <button id="nextBtn" title="Next">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M17 6v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M6 6l7 6-7 6V6z" fill="currentColor"/>
+      </svg>
+    </button>
   </div>
 
   <div class="card">

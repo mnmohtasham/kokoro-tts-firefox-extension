@@ -58,22 +58,27 @@
 
     const overlay = document.createElement('div');
     overlay.id = 'ptts-summary-overlay';
-    overlay.style.cssText = 'position:fixed;top:20px;right:20px;max-width:480px;width:90vw;max-height:80vh;display:flex;flex-direction:column;background:#fff;color:#222;border:1px solid #ccc;border-radius:8px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,0.15);font-size:14px;line-height:1.5;';
+    overlay.style.cssText = 'position:fixed;top:18px;right:18px;max-width:520px;width:92vw;max-height:82vh;display:flex;flex-direction:column;background:rgba(10,14,24,0.78);color:rgba(234,240,255,0.92);border:1px solid rgba(255,255,255,0.14);border-radius:18px;z-index:999999;box-shadow:0 20px 50px rgba(0,0,0,0.45);font-size:14px;line-height:1.55;backdrop-filter: blur(14px);';
 
     const header = document.createElement('div');
-    header.style.cssText = 'display:flex;align-items:center;gap:6px;padding:10px 12px;flex-shrink:0;border-bottom:1px solid #eee;';
+    header.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.04);';
 
     const title = document.createElement('div');
     title.textContent = 'Summary';
     title.style.cssText = 'font-weight:bold;margin-right:auto;';
     header.appendChild(title);
 
+    const themeBtn = document.createElement('button');
+    themeBtn.innerHTML = '<span>Dark Mode</span><span style=\"width:34px;height:18px;border-radius:999px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.14);position:relative;flex-shrink:0;display:inline-block;\"><span data-dot=\"1\" style=\"position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:999px;background:rgba(255,255,255,0.92);transition:transform 0.15s ease;\"></span></span>';
+    themeBtn.style.cssText = 'padding:6px 10px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:rgba(234,240,255,0.92);border-radius:999px;cursor:pointer;font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:8px;user-select:none;';
+    header.appendChild(themeBtn);
+
     let currentFontSize = 14;
 
     const summaryReadBtn = document.createElement('button');
     summaryReadBtn.textContent = 'Read';
     summaryReadBtn.setAttribute('data-ptts-summary-read', '1');
-    summaryReadBtn.style.cssText = 'padding:4px 10px;border:1px solid #7b2ff7;background:#fff;color:#7b2ff7;border-radius:4px;cursor:pointer;font-size:11px;flex-shrink:0;';
+    summaryReadBtn.style.cssText = 'padding:6px 10px;border:1px solid rgba(56,189,248,0.35);background:rgba(56,189,248,0.10);color:rgba(234,240,255,0.95);border-radius:12px;cursor:pointer;font-size:11px;flex-shrink:0;';
     summaryReadBtn.onclick = function () {
       const label = summaryReadBtn.textContent;
       if (label === 'Pause') {
@@ -88,7 +93,7 @@
 
     const copyBtn = document.createElement('button');
     copyBtn.textContent = 'Copy';
-    copyBtn.style.cssText = 'padding:4px 10px;border:1px solid #ccc;background:#fff;color:#333;border-radius:4px;cursor:pointer;font-size:11px;flex-shrink:0;';
+    copyBtn.style.cssText = 'padding:6px 10px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:rgba(234,240,255,0.92);border-radius:12px;cursor:pointer;font-size:11px;flex-shrink:0;';
     copyBtn.onclick = function () {
       navigator.clipboard.writeText(result.summary).then(function () {
         copyBtn.textContent = 'Copied!';
@@ -99,24 +104,24 @@
 
     const fontMinus = document.createElement('button');
     fontMinus.textContent = '−';
-    fontMinus.style.cssText = 'width:24px;height:24px;border:1px solid #ccc;background:#fff;color:#333;border-radius:4px;cursor:pointer;font-size:14px;line-height:1;padding:0;flex-shrink:0;';
+    fontMinus.style.cssText = 'width:28px;height:28px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:rgba(234,240,255,0.92);border-radius:12px;cursor:pointer;font-size:14px;line-height:1;padding:0;flex-shrink:0;';
     header.appendChild(fontMinus);
 
     const fontPlus = document.createElement('button');
     fontPlus.textContent = '+';
-    fontPlus.style.cssText = 'width:24px;height:24px;border:1px solid #ccc;background:#fff;color:#333;border-radius:4px;cursor:pointer;font-size:14px;line-height:1;padding:0;flex-shrink:0;';
+    fontPlus.style.cssText = 'width:28px;height:28px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:rgba(234,240,255,0.92);border-radius:12px;cursor:pointer;font-size:14px;line-height:1;padding:0;flex-shrink:0;';
     header.appendChild(fontPlus);
 
     const close = document.createElement('button');
     close.textContent = '✕';
-    close.style.cssText = 'background:none;border:none;font-size:14px;cursor:pointer;color:#666;padding:0 2px;flex-shrink:0;';
+    close.style.cssText = 'background:none;border:none;font-size:14px;cursor:pointer;color:rgba(234,240,255,0.70);padding:0 4px;flex-shrink:0;';
     close.onclick = function () { overlay.remove(); };
     header.appendChild(close);
 
     overlay.appendChild(header);
 
     const scrollArea = document.createElement('div');
-    scrollArea.style.cssText = 'overflow-y:auto;padding:12px 16px 16px;flex:1;min-height:0;';
+    scrollArea.style.cssText = 'overflow-y:auto;padding:12px 14px 14px;flex:1;min-height:0;';
 
     const text = document.createElement('div');
     text.insertAdjacentHTML('afterbegin', mdToHtml(result.summary));
@@ -136,11 +141,82 @@
 
     const meta = document.createElement('div');
     meta.textContent = `Model: ${result.model} | Words: ${result.wordCount} | Time: ${result.timeTaken}s`;
-    meta.style.cssText = 'margin-top:8px;font-size:11px;color:#888;';
+    meta.style.cssText = 'margin-top:10px;font-size:11px;color:rgba(234,240,255,0.55);';
     scrollArea.appendChild(meta);
 
     overlay.appendChild(scrollArea);
     document.body.appendChild(overlay);
+
+    function applySummaryTheme(theme) {
+      const t = theme === 'day' ? 'day' : 'night';
+      const dot = themeBtn.querySelector('[data-dot=\"1\"]');
+      if (dot) dot.style.transform = (t === 'night') ? 'translateX(16px)' : 'translateX(0px)';
+      // Toggle pill colors: green when Dark Mode is ON (night)
+      const pill = dot ? dot.parentElement : null;
+      if (pill && dot) {
+        if (t === 'night') {
+          pill.style.background = 'rgba(34,197,94,0.22)';
+          pill.style.borderColor = 'rgba(34,197,94,0.45)';
+          dot.style.background = '#22c55e';
+        } else {
+          pill.style.background = 'rgba(10,14,24,0.04)';
+          pill.style.borderColor = 'rgba(10,14,24,0.12)';
+          dot.style.background = 'rgba(10,14,24,0.45)';
+        }
+      }
+      if (t === 'day') {
+        themeBtn.style.background = 'rgba(10,14,24,0.04)';
+        themeBtn.style.borderColor = 'rgba(10,14,24,0.12)';
+        themeBtn.style.color = 'rgba(10,14,24,0.85)';
+        overlay.style.background = 'rgba(255,255,255,0.92)';
+        overlay.style.backgroundColor = 'rgba(255,255,255,0.92)';
+        overlay.style.color = 'rgba(10,14,24,0.92)';
+        overlay.style.border = '1px solid rgba(10,14,24,0.10)';
+        header.style.background = 'rgba(10,14,24,0.04)';
+        header.style.borderBottom = '1px solid rgba(10,14,24,0.08)';
+        meta.style.color = 'rgba(10,14,24,0.55)';
+        summaryReadBtn.style.borderColor = 'rgba(56,189,248,0.35)';
+        summaryReadBtn.style.background = 'rgba(56,189,248,0.12)';
+        summaryReadBtn.style.color = 'rgba(10,14,24,0.92)';
+        copyBtn.style.color = 'rgba(10,14,24,0.92)';
+        copyBtn.style.borderColor = 'rgba(10,14,24,0.12)';
+        copyBtn.style.background = 'rgba(10,14,24,0.04)';
+        fontMinus.style.color = 'rgba(10,14,24,0.92)';
+        fontPlus.style.color = 'rgba(10,14,24,0.92)';
+        close.style.color = 'rgba(10,14,24,0.60)';
+      } else {
+        themeBtn.style.background = 'rgba(255,255,255,0.06)';
+        themeBtn.style.borderColor = 'rgba(255,255,255,0.14)';
+        themeBtn.style.color = 'rgba(234,240,255,0.92)';
+        overlay.style.background = 'rgba(10,14,24,0.78)';
+        overlay.style.backgroundColor = 'rgba(10,14,24,0.78)';
+        overlay.style.color = 'rgba(234,240,255,0.92)';
+        overlay.style.border = '1px solid rgba(255,255,255,0.14)';
+        header.style.background = 'rgba(255,255,255,0.04)';
+        header.style.borderBottom = '1px solid rgba(255,255,255,0.10)';
+        meta.style.color = 'rgba(234,240,255,0.55)';
+        summaryReadBtn.style.borderColor = 'rgba(56,189,248,0.35)';
+        summaryReadBtn.style.background = 'rgba(56,189,248,0.10)';
+        summaryReadBtn.style.color = 'rgba(234,240,255,0.95)';
+        copyBtn.style.color = 'rgba(234,240,255,0.92)';
+        copyBtn.style.borderColor = 'rgba(255,255,255,0.14)';
+        copyBtn.style.background = 'rgba(255,255,255,0.06)';
+        fontMinus.style.color = 'rgba(234,240,255,0.92)';
+        fontPlus.style.color = 'rgba(234,240,255,0.92)';
+        close.style.color = 'rgba(234,240,255,0.70)';
+      }
+      browser.storage.local.set({ summaryTheme: t }).catch(() => {});
+    }
+
+    themeBtn.onclick = function () {
+      browser.storage.local.get(['summaryTheme']).then((data) => {
+        applySummaryTheme((data.summaryTheme || 'day') === 'day' ? 'night' : 'day');
+      }).catch(() => applySummaryTheme('day'));
+    };
+    browser.storage.local.get(['summaryTheme']).then((data) => {
+      applySummaryTheme(data.summaryTheme || 'day');
+    }).catch(() => applySummaryTheme('day'));
+
     return summaryReadBtn;
   }
 
@@ -166,83 +242,290 @@
       <style>
         #ptts-float-btns {
           position: fixed;
-          bottom: 80px;
-          right: 24px;
+          bottom: 92px;
+          right: 18px;
           z-index: 999998;
           display: flex;
-          flex-direction: column;
+          font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+          filter: drop-shadow(0 18px 30px rgba(0,0,0,0.35));
+        }
+        .ptts-dock {
+          display: flex;
+          align-items: center;
           gap: 10px;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          padding: 10px;
+          border-radius: 18px;
+          background: rgba(10, 14, 24, 0.40);
+          border: 1px solid rgba(255,255,255,0.14);
+          backdrop-filter: blur(12px);
         }
         .ptts-fab {
-          width: 48px;
-          height: 48px;
-          border: none;
-          border-radius: 50%;
+          width: 52px;
+          height: 52px;
+          border: 1px solid rgba(255,255,255,0.14);
+          border-radius: 18px;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-          transition: transform 0.15s, box-shadow 0.15s;
+          background: rgba(255,255,255,0.08);
+          backdrop-filter: blur(10px);
+          transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
           position: relative;
+          overflow: hidden;
         }
-        .ptts-fab:hover { transform: scale(1.1); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
-        .ptts-fab:active { transform: scale(0.95); }
-        .ptts-fab svg { width: 22px; height: 22px; fill: #fff; }
-        #ptts-btn-summarize { background: linear-gradient(135deg, #667eea, #764ba2); }
-        #ptts-btn-read { background: linear-gradient(135deg, #0095ff, #7b2ff7); }
-        #ptts-btn-ask { background: linear-gradient(135deg, #e89b0c, #d4691a); }
-        #ptts-ask-panel {
+        .ptts-fab::before {
+          content: '';
+          position: absolute;
+          inset: -40%;
+          background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.45), transparent 40%);
+          transform: rotate(20deg);
+          opacity: 0.6;
+        }
+        .ptts-fab:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.10); }
+        .ptts-fab:active { transform: translateY(0px) scale(0.98); }
+        .ptts-fab svg { width: 22px; height: 22px; fill: #fff; z-index: 1; }
+        #ptts-btn-summarize { background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(167,139,250,0.25)); }
+        #ptts-btn-read { background: linear-gradient(135deg, rgba(34,197,94,0.22), rgba(56,189,248,0.22)); }
+        #ptts-btn-ask { background: linear-gradient(135deg, rgba(251,113,133,0.22), rgba(167,139,250,0.22)); }
+        #ptts-chat {
           display: none;
           position: fixed;
-          bottom: 240px;
-          right: 24px;
-          width: 300px;
-          background: #fff;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          right: max(12px, env(safe-area-inset-right));
+          left: auto;
+          bottom: max(88px, env(safe-area-inset-bottom));
+          width: min(380px, calc(100vw - 24px));
+          height: min(560px, calc(100vh - 140px));
+          display: none;
+          flex-direction: column;
+          background: rgba(10, 14, 24, 0.70);
+          border: 1px solid rgba(255,255,255,0.14);
+          border-radius: 18px;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.45);
           z-index: 999998;
-          padding: 10px;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          overflow: hidden;
+          backdrop-filter: blur(14px);
+          color: rgba(234,240,255,0.92);
         }
-        #ptts-ask-panel textarea {
-          width: 100%;
-          height: 60px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          padding: 6px;
-          font-size: 12px;
-          resize: vertical;
-          font-family: inherit;
-          box-sizing: border-box;
+        #ptts-chat.ptts-open { display: flex; }
+        #ptts-chat-header {
+          display:flex;
+          align-items:center;
+          gap:10px;
+          padding: 10px 12px;
+          border-bottom: 1px solid rgba(255,255,255,0.10);
+          background: rgba(255,255,255,0.04);
         }
-        #ptts-ask-panel button {
-          margin-top: 6px;
-          padding: 5px 16px;
-          border: none;
-          background: linear-gradient(135deg, #e89b0c, #d4691a);
-          color: #fff;
-          border-radius: 4px;
+        #ptts-chat-title { font-weight: 700; letter-spacing: 0.2px; font-size: 13px; margin-right:auto; }
+        #ptts-chat-close {
+          width: 32px;
+          height: 32px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          border: 1px solid rgba(255,255,255,0.14);
+          background: rgba(255,255,255,0.06);
+          color: rgba(234,240,255,0.9);
+          border-radius: 12px;
+          cursor: pointer;
+          font-size: 14px;
+          line-height: 1;
+          padding: 0;
+        }
+        #ptts-chat-theme {
+          border: 1px solid rgba(255,255,255,0.14);
+          background: rgba(255,255,255,0.06);
+          color: rgba(234,240,255,0.9);
+          border-radius: 999px;
+          padding: 6px 10px;
           cursor: pointer;
           font-size: 12px;
+          display:flex;
+          align-items:center;
+          gap: 8px;
+          user-select: none;
         }
-        #ptts-ask-panel button:disabled { opacity: 0.6; cursor: default; }
+        #ptts-chat-theme .ptts-toggle-pill {
+          width: 34px;
+          height: 18px;
+          border-radius: 999px;
+          background: rgba(255,255,255,0.10);
+          border: 1px solid rgba(255,255,255,0.14);
+          position: relative;
+          flex-shrink: 0;
+        }
+        #ptts-chat-theme .ptts-toggle-dot {
+          position:absolute;
+          top: 2px;
+          left: 2px;
+          width: 14px;
+          height: 14px;
+          border-radius: 999px;
+          background: rgba(255,255,255,0.92);
+          transition: transform 0.15s ease;
+        }
+        #ptts-chat.ptts-theme-night #ptts-chat-theme .ptts-toggle-pill {
+          background: rgba(34,197,94,0.22);
+          border-color: rgba(34,197,94,0.45);
+        }
+        #ptts-chat.ptts-theme-night #ptts-chat-theme .ptts-toggle-dot {
+          background: #22c55e;
+          transform: translateX(16px);
+        }
+        #ptts-chat.ptts-theme-night #ptts-chat-theme {
+          background: rgba(255,255,255,0.06);
+          border-color: rgba(255,255,255,0.14);
+          color: rgba(234,240,255,0.90);
+        }
+        #ptts-chat.ptts-theme-day #ptts-chat-theme .ptts-toggle-pill {
+          background: rgba(10,14,24,0.04);
+          border-color: rgba(10,14,24,0.12);
+        }
+        #ptts-chat.ptts-theme-day #ptts-chat-theme .ptts-toggle-dot {
+          background: rgba(10,14,24,0.45);
+          transform: translateX(0px);
+        }
+        #ptts-chat.ptts-theme-day #ptts-chat-theme {
+          background: rgba(10,14,24,0.04);
+          border-color: rgba(10,14,24,0.12);
+          color: rgba(10,14,24,0.85);
+        }
+
+        #ptts-chat-expand {
+          width: 32px;
+          height: 32px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          border: 1px solid rgba(255,255,255,0.14);
+          background: rgba(255,255,255,0.06);
+          color: rgba(234,240,255,0.9);
+          border-radius: 12px;
+          cursor: pointer;
+          font-size: 14px;
+          line-height: 1;
+          padding: 0;
+        }
+
+        #ptts-chat.ptts-expanded {
+          right: max(10px, env(safe-area-inset-right));
+          left: max(10px, env(safe-area-inset-left));
+          top: max(10px, env(safe-area-inset-top));
+          bottom: max(10px, env(safe-area-inset-bottom));
+          width: auto;
+          height: auto;
+          border-radius: 18px;
+        }
+        #ptts-chat-messages {
+          padding: 12px;
+          flex: 1;
+          min-height: 0;
+          overflow: auto;
+        }
+        .ptts-msg {
+          max-width: 92%;
+          padding: 10px 10px;
+          border-radius: 14px;
+          margin-bottom: 10px;
+          border: 1px solid rgba(255,255,255,0.10);
+          background: rgba(255,255,255,0.06);
+          line-height: 1.45;
+          font-size: 13px;
+          white-space: pre-wrap;
+        }
+        .ptts-msg.user { margin-left: auto; background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.18); }
+        .ptts-msg.assistant { margin-right: auto; background: rgba(167,139,250,0.10); border-color: rgba(167,139,250,0.16); }
+        #ptts-chat-inputbar {
+          display:flex;
+          gap: 8px;
+          padding: 10px 12px;
+          border-top: 1px solid rgba(255,255,255,0.10);
+          background: rgba(255,255,255,0.04);
+          flex-shrink: 0;
+        }
+        #ptts-chat-input {
+          flex: 1;
+          border: 1px solid rgba(255,255,255,0.14);
+          background: rgba(255,255,255,0.06);
+          color: rgba(234,240,255,0.92);
+          border-radius: 14px;
+          padding: 10px 10px;
+          font-size: 13px;
+          outline: none;
+          resize: none;
+          height: 40px;
+          max-height: 120px;
+          overflow: auto;
+        }
+        #ptts-chat-send {
+          border: 0;
+          background: linear-gradient(135deg, rgba(56,189,248,0.95), rgba(167,139,250,0.95));
+          color: rgba(10, 14, 24, 0.92);
+          border-radius: 14px;
+          padding: 0 14px;
+          cursor: pointer;
+          font-weight: 700;
+        }
+        #ptts-chat-send:disabled { opacity: 0.6; cursor: default; }
+
+        /* Theme variants (applied by toggles) */
+        #ptts-chat.ptts-theme-night {
+          background: rgba(10, 14, 24, 0.70);
+          color: rgba(234,240,255,0.92);
+          border: 1px solid rgba(255,255,255,0.14);
+        }
+        #ptts-chat.ptts-theme-day {
+          background: rgba(255,255,255,0.88);
+          color: rgba(10,14,24,0.92);
+          border: 1px solid rgba(10,14,24,0.10);
+        }
+        #ptts-chat.ptts-theme-day #ptts-chat-header,
+        #ptts-chat.ptts-theme-day #ptts-chat-inputbar {
+          background: rgba(10,14,24,0.04);
+          border-color: rgba(10,14,24,0.08);
+        }
+        #ptts-chat.ptts-theme-day #ptts-chat-input {
+          background: rgba(255,255,255,0.90);
+          color: rgba(10,14,24,0.92);
+          border-color: rgba(10,14,24,0.12);
+        }
+        #ptts-chat.ptts-theme-day .ptts-msg { background: rgba(10,14,24,0.04); border-color: rgba(10,14,24,0.08); }
+        #ptts-chat.ptts-theme-day .ptts-msg.user { background: rgba(56,189,248,0.14); border-color: rgba(56,189,248,0.22); }
+        #ptts-chat.ptts-theme-day .ptts-msg.assistant { background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.20); }
+        #ptts-chat.ptts-theme-day #ptts-chat-close,
+        #ptts-chat.ptts-theme-day #ptts-chat-expand {
+          background: rgba(10,14,24,0.04);
+          border-color: rgba(10,14,24,0.12);
+          color: rgba(10,14,24,0.85);
+        }
+        #ptts-chat.ptts-theme-day #ptts-chat-theme {
+          background: rgba(10,14,24,0.04);
+          border-color: rgba(10,14,24,0.12);
+          color: rgba(10,14,24,0.85);
+        }
+        #ptts-chat.ptts-theme-day #ptts-chat-send {
+          background: rgba(56,189,248,0.12);
+          border: 1px solid rgba(56,189,248,0.35);
+          color: rgba(10,14,24,0.92);
+        }
         .ptts-fab-tooltip {
           position: absolute;
-          right: 56px;
+          right: 60px;
           white-space: nowrap;
-          background: rgba(0,0,0,0.8);
-          color: #fff;
+          background: rgba(10, 14, 24, 0.85);
+          color: rgba(234,240,255,0.92);
           font-size: 12px;
-          padding: 4px 10px;
-          border-radius: 4px;
+          padding: 6px 10px;
+          border-radius: 999px;
           pointer-events: none;
           opacity: 0;
-          transition: opacity 0.15s;
+          transform: translateX(6px);
+          transition: opacity 0.15s ease, transform 0.15s ease;
+          border: 1px solid rgba(255,255,255,0.12);
+          backdrop-filter: blur(10px);
+          z-index: 2;
         }
-        .ptts-fab:hover .ptts-fab-tooltip { opacity: 1; }
+        .ptts-fab:hover .ptts-fab-tooltip { opacity: 1; transform: translateX(0px); }
         @keyframes ptts-spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
@@ -250,66 +533,145 @@
         .ptts-fab.ptts-loading svg { animation: ptts-spin 1s linear infinite; }
         .ptts-fab.ptts-loading { pointer-events: none; opacity: 0.8; }
       </style>
-      <button id="ptts-btn-summarize" class="ptts-fab" title="Summarize page">
-        <span class="ptts-fab-tooltip">Summarize</span>
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm2-8h8v2H8v-2zm0 4h5v2H8v-2z"/></svg>
-      </button>
-      <button id="ptts-btn-read" class="ptts-fab" title="Read aloud">
-        <span class="ptts-fab-tooltip">Read aloud</span>
-        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-      </button>
-      <button id="ptts-btn-ask" class="ptts-fab" title="Ask page">
-        <span class="ptts-fab-tooltip">Ask page</span>
-        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/><path d="M7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/></svg>
-      </button>
+      <div class="ptts-dock">
+        <button id="ptts-btn-read" class="ptts-fab" title="Read aloud">
+          <span class="ptts-fab-tooltip">Read aloud</span>
+          <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        </button>
+        <button id="ptts-btn-summarize" class="ptts-fab" title="Summarize page">
+          <span class="ptts-fab-tooltip">Summarize</span>
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm2-8h8v2H8v-2zm0 4h5v2H8v-2z"/></svg>
+        </button>
+        <button id="ptts-btn-ask" class="ptts-fab" title="Ask page">
+          <span class="ptts-fab-tooltip">Ask</span>
+          <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/><path d="M7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/></svg>
+        </button>
+      </div>
     `;
 
-    const askPanel = document.createElement('div');
-    askPanel.id = 'ptts-ask-panel';
-    const askTextarea = document.createElement('textarea');
-    askTextarea.placeholder = 'e.g. List all book titles mentioned on this page';
-    const askRunBtn = document.createElement('button');
-    askRunBtn.textContent = 'Run';
-    askPanel.appendChild(askTextarea);
-    askPanel.appendChild(askRunBtn);
-
-    browser.storage.local.get('askPrompt').then((data) => {
-      if (data.askPrompt) askTextarea.value = data.askPrompt;
-    }).catch(() => {});
-
     document.body.appendChild(container);
-    document.body.appendChild(askPanel);
+
+    const chat = document.createElement('div');
+    chat.id = 'ptts-chat';
+    chat.innerHTML = `
+      <div id="ptts-chat-header">
+        <div id="ptts-chat-title">Ask this page</div>
+        <button id="ptts-chat-theme" type="button" aria-label="Dark Mode toggle">
+          <span>Dark Mode</span>
+          <span class="ptts-toggle-pill"><span class="ptts-toggle-dot"></span></span>
+        </button>
+        <button id="ptts-chat-expand" type="button" aria-label="Expand chat">⤢</button>
+        <button id="ptts-chat-close" type="button" aria-label="Close">✕</button>
+      </div>
+      <div id="ptts-chat-messages"></div>
+      <div id="ptts-chat-inputbar">
+        <textarea id="ptts-chat-input" placeholder="Ask a question about this page..."></textarea>
+        <button id="ptts-chat-send" type="button">Send</button>
+      </div>
+    `;
+    document.body.appendChild(chat);
 
     const askBtn = document.getElementById('ptts-btn-ask');
+    const chatClose = chat.querySelector('#ptts-chat-close');
+    const chatThemeBtn = chat.querySelector('#ptts-chat-theme');
+    const chatExpandBtn = chat.querySelector('#ptts-chat-expand');
+    const chatMessages = chat.querySelector('#ptts-chat-messages');
+    const chatInput = chat.querySelector('#ptts-chat-input');
+    const chatSend = chat.querySelector('#ptts-chat-send');
+
+    const chatState = { messages: [], hasSeededPageText: false };
+
+    function renderChatMessage(role, text) {
+      const div = document.createElement('div');
+      div.className = `ptts-msg ${role}`;
+      div.textContent = text;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function setChatTheme(theme) {
+      const t = (theme === 'day') ? 'day' : 'night';
+      chat.classList.toggle('ptts-theme-day', t === 'day');
+      chat.classList.toggle('ptts-theme-night', t !== 'day');
+      browser.storage.local.set({ chatTheme: t }).catch(() => {});
+    }
+
+    function openChat() {
+      chat.classList.add('ptts-open');
+      chatInput.focus();
+      if (chatState.messages.length === 0) {
+        renderChatMessage('assistant', 'Ask anything about this page. You can follow up and I will keep context.');
+      }
+    }
+    function closeChat() {
+      chat.classList.remove('ptts-open');
+      chat.classList.remove('ptts-expanded');
+    }
+
     askBtn.addEventListener('click', () => {
-      askPanel.style.display = askPanel.style.display === 'block' ? 'none' : 'block';
+      const visible = chat.classList.contains('ptts-open');
+      if (visible) closeChat();
+      else openChat();
+    });
+    chatClose.addEventListener('click', closeChat);
+    chatThemeBtn.addEventListener('click', () => {
+      const isDay = chat.classList.contains('ptts-theme-day');
+      setChatTheme(isDay ? 'night' : 'day');
+    });
+    chatExpandBtn.addEventListener('click', () => {
+      const expanded = chat.classList.toggle('ptts-expanded');
+      chatExpandBtn.textContent = expanded ? '⤡' : '⤢';
+      // Keep focus usable on mobile after resize
+      setTimeout(() => chatInput.focus(), 0);
     });
 
-    askRunBtn.addEventListener('click', () => {
-      const prompt = askTextarea.value.trim();
-      if (!prompt) return;
-      browser.storage.local.set({ askPrompt: prompt }).catch(() => {});
-      askRunBtn.textContent = 'Running…';
-      askRunBtn.disabled = true;
+    browser.storage.local.get(['chatTheme']).then((data) => {
+      // Dark Mode OFF by default
+      setChatTheme(data.chatTheme || 'day');
+    }).catch(() => setChatTheme('day'));
 
-      browser.runtime.sendMessage({
-        type: 'summarize-page',
-        pageText: extractPageText(),
-        customPrompt: prompt
-      }).then((result) => {
-        askRunBtn.textContent = 'Run';
-        askRunBtn.disabled = false;
+    async function sendChat() {
+      const q = (chatInput.value || '').trim();
+      if (!q) return;
+      chatInput.value = '';
+      chatState.messages.push({ role: 'user', content: q });
+      renderChatMessage('user', q);
+
+      chatSend.disabled = true;
+      chatSend.textContent = '...';
+
+      const pageText = extractPageText();
+      const history = chatState.messages
+        .slice(-10)
+        .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+        .join('\\n');
+      const prompt = chatState.hasSeededPageText
+        ? `Answer the user's question using the page context. Keep it concise and factual.\\n\\nConversation:\\n${history}\\n`
+        : `Answer the user's question using the page context. Keep it concise and factual.\\n\\nPage:\\n${pageText}\\n\\nConversation:\\n${history}\\n`;
+
+      try {
+        const result = await browser.runtime.sendMessage({ type: 'summarize-page', pageText, customPrompt: prompt });
         if (result && result.success) {
-          askPanel.style.display = 'none';
-          showSummaryOverlay(result);
+          chatState.hasSeededPageText = true;
+          chatState.messages.push({ role: 'assistant', content: result.summary });
+          renderChatMessage('assistant', result.summary);
         } else {
-          showToast(`Ask failed: ${result ? result.error : 'Unknown error'}`);
+          renderChatMessage('assistant', `Ask failed: ${(result && result.error) ? result.error : 'Unknown error'}`);
         }
-      }).catch((err) => {
-        askRunBtn.textContent = 'Run';
-        askRunBtn.disabled = false;
-        showToast(`Ask failed: ${err.message}`);
-      });
+      } catch (e) {
+        renderChatMessage('assistant', `Ask failed: ${e.message}`);
+      } finally {
+        chatSend.disabled = false;
+        chatSend.textContent = 'Send';
+      }
+    }
+
+    chatSend.addEventListener('click', sendChat);
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChat();
+      }
     });
 
     const sumBtn = document.getElementById('ptts-btn-summarize');
@@ -353,25 +715,30 @@
       });
     });
 
-    // Hover rewind/forward bar (left side of read button)
+    // Rewind/forward bar — show ABOVE the read button while playing
     const seekBar = document.createElement('div');
     seekBar.id = 'ptts-seekbar';
-    seekBar.style.cssText = 'position:absolute;right:56px;top:50%;transform:translateY(-50%);display:none;gap:6px;align-items:center;background:rgba(0,0,0,0.75);padding:6px 8px;border-radius:999px;z-index:999999;';
+    seekBar.style.cssText = 'position:absolute;left:50%;bottom:66px;transform:translateX(-50%);display:none;gap:6px;align-items:center;background:rgba(10,14,24,0.85);padding:7px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.12);backdrop-filter: blur(10px);z-index:999999;';
     seekBar.innerHTML = `
-      <button data-d="-10" style="border:none;background:#fff;color:#333;border-radius:999px;padding:4px 8px;font-size:11px;cursor:pointer;">-10s</button>
-      <button data-d="-5" style="border:none;background:#fff;color:#333;border-radius:999px;padding:4px 8px;font-size:11px;cursor:pointer;">-5s</button>
-      <button data-d="5" style="border:none;background:#fff;color:#333;border-radius:999px;padding:4px 8px;font-size:11px;cursor:pointer;">+5s</button>
-      <button data-d="10" style="border:none;background:#fff;color:#333;border-radius:999px;padding:4px 8px;font-size:11px;cursor:pointer;">+10s</button>
+      <button data-d="-10" style="border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.08);color:rgba(234,240,255,0.95);border-radius:999px;padding:5px 9px;font-size:11px;cursor:pointer;transition:transform .12s ease,background .12s ease;">-10s</button>
+      <button data-d="-5" style="border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.08);color:rgba(234,240,255,0.95);border-radius:999px;padding:5px 9px;font-size:11px;cursor:pointer;transition:transform .12s ease,background .12s ease;">-5s</button>
+      <button data-d="5" style="border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.08);color:rgba(234,240,255,0.95);border-radius:999px;padding:5px 9px;font-size:11px;cursor:pointer;transition:transform .12s ease,background .12s ease;">+5s</button>
+      <button data-d="10" style="border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.08);color:rgba(234,240,255,0.95);border-radius:999px;padding:5px 9px;font-size:11px;cursor:pointer;transition:transform .12s ease,background .12s ease;">+10s</button>
     `;
     readBtn.appendChild(seekBar);
 
     function showSeekBar(show) {
       seekBar.style.display = show ? 'flex' : 'none';
     }
-    readBtn.addEventListener('mouseenter', () => showSeekBar(true));
-    readBtn.addEventListener('mouseleave', () => showSeekBar(false));
-    seekBar.addEventListener('mouseenter', () => showSeekBar(true));
-    seekBar.addEventListener('mouseleave', () => showSeekBar(false));
+    let canShowSeek = false;
+    let isHoveringRead = false;
+    function refreshSeekBarVisibility() {
+      showSeekBar(Boolean(canShowSeek && isHoveringRead));
+    }
+    readBtn.addEventListener('mouseenter', () => { isHoveringRead = true; refreshSeekBarVisibility(); });
+    readBtn.addEventListener('mouseleave', () => { isHoveringRead = false; refreshSeekBarVisibility(); });
+    seekBar.addEventListener('mouseenter', () => { isHoveringRead = true; refreshSeekBarVisibility(); });
+    seekBar.addEventListener('mouseleave', () => { isHoveringRead = false; refreshSeekBarVisibility(); });
 
     seekBar.querySelectorAll('button[data-d]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
@@ -397,12 +764,16 @@
       const tooltip = readBtn.querySelector('.ptts-fab-tooltip');
       const svg = readBtn.querySelector('svg');
       if (isPlaying && !isPaused) {
+        canShowSeek = true;
         svg.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
         tooltip.textContent = 'Pause';
       } else {
+        canShowSeek = false;
+        showSeekBar(false);
         svg.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
         tooltip.textContent = 'Read aloud';
       }
+      refreshSeekBarVisibility();
     }
 
     window.__pttsUpdateReadBtn = updateReadBtnIcon;
@@ -421,7 +792,8 @@
     }
   }
 
-  browser.storage.local.get('excludedSites').then((data) => {
+  browser.storage.local.get(['excludedSites', 'showFloatingButtons']).then((data) => {
+    if (data.showFloatingButtons === false) return;
     const sites = data.excludedSites || DEFAULT_EXCLUDED;
     const url = location.hostname + location.pathname;
     const isExcluded = sites.some((pattern) => {

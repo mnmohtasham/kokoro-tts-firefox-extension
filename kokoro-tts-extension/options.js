@@ -13,6 +13,7 @@ const elements = {
   openaiModel: document.getElementById('openaiModel'),
   openaiCard: document.getElementById('openaiCard'),
   excludedSites: document.getElementById('excludedSites'),
+  showFloatingButtons: document.getElementById('showFloatingButtons'),
   lanStatus: document.getElementById('lanStatus'),
   lanStatusText: document.getElementById('lanStatusText'),
   vpnStatus: document.getElementById('vpnStatus'),
@@ -259,12 +260,17 @@ async function loadSettings() {
     'openaiApiKey',
     'openaiBaseUrl',
     'openaiModel'
+    ,'showFloatingButtons'
   ]);
 
   if (data.lanUrl) elements.lanUrl.value = data.lanUrl;
   if (data.vpnUrl) elements.vpnUrl.value = data.vpnUrl;
   if (data.mode) elements.defaultMode.value = data.mode;
   elements.excludedSites.value = (data.excludedSites || DEFAULT_EXCLUDED).join('\n');
+  if (elements.showFloatingButtons) {
+    const on = (data.showFloatingButtons !== false);
+    elements.showFloatingButtons.value = on ? 'on' : 'off';
+  }
 
   elements.summaryProvider.value = data.summaryProvider || 'ollama';
   if (data.ollamaBaseUrl && elements.ollamaBaseUrl) elements.ollamaBaseUrl.value = data.ollamaBaseUrl;
@@ -338,6 +344,7 @@ async function saveSettings() {
     openaiApiKey: elements.openaiApiKey.value,
     openaiBaseUrl: elements.openaiBaseUrl.value,
     openaiModel: elements.openaiModel.value,
+    showFloatingButtons: elements.showFloatingButtons ? (elements.showFloatingButtons.value === 'on') : true,
     excludedSites
   });
 
