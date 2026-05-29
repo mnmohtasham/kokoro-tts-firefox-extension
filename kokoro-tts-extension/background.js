@@ -122,7 +122,7 @@ async function autoDetectApi() {
       state.apiBase = state.lanUrl;
       state.apiMode = 'lan';
     } else {
-      throw new Error('IP1 not available');
+      throw new Error('Server 1 not available');
     }
   } catch {
     try {
@@ -604,8 +604,17 @@ function playCurrentSentence() {
     notifyClients();
   };
 
+  detachWordHighlight();
+  audio.addEventListener('loadedmetadata', () => {
+    attachWordHighlight(state.sentences[state.currentIndex], audio);
+  }, { once: true });
+  audio.addEventListener('play', () => {
+    if (!audio._pttsHighlightAttached) {
+      attachWordHighlight(state.sentences[state.currentIndex], audio);
+    }
+  }, { once: true });
+
   audio.play();
-  highlightOnPage(state.sentences[state.currentIndex]);
   notifyClients();
 }
 
@@ -630,6 +639,7 @@ function stopReading() {
   state.isPlaying = false;
   state.isPaused = false;
 
+  detachWordHighlight();
   if (state.currentAudio) {
     state.currentAudio.pause();
     state.currentAudio = null;
@@ -669,6 +679,7 @@ function resumeReading() {
 }
 
 function skipNext() {
+  detachWordHighlight();
   if (state.currentAudio) {
     state.currentAudio.pause();
     state.currentAudio.onended = null;
@@ -696,6 +707,7 @@ function skipNext() {
 function skipPrev() {
   if (state.currentIndex <= 0) return;
 
+  detachWordHighlight();
   if (state.currentAudio) {
     state.currentAudio.pause();
     state.currentAudio.onended = null;
@@ -723,19 +735,56 @@ function buildFlexPattern(text) {
   return escaped.replace(/ /g, '\\s+');
 }
 
-function highlightOnPage(sentence) {
+function detachWordHighlight() {
+  if (state.currentAudio && state.currentAudio._pttsOnTimeUpdate) {
+    state.currentAudio.removeEventListener('timeupdate', state.currentAudio._pttsOnTimeUpdate);
+    state.currentAudio._pttsOnTimeUpdate = null;
+    state.currentAudio._pttsHighlightAttached = false;
+  }
+  state._lastWordIndex = -1;
+}
+
+function attachWordHighlight(sentence, audio) {
+  if (!sentence || !audio) return;
+  const words = sentence.trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return;
+
+  detachWordHighlight();
+  audio._pttsHighlightAttached = true;
+  let lastIdx = -1;
+
+  const onTimeUpdate = () => {
+    const duration = audio.duration;
+    if (!duration || !Number.isFinite(duration)) return;
+    const idx = Math.min(
+      words.length - 1,
+      Math.floor((audio.currentTime / duration) * words.length)
+    );
+    if (idx !== lastIdx) {
+      lastIdx = idx;
+      state._lastWordIndex = idx;
+      highlightWordOnPage(sentence, idx);
+    }
+  };
+
+  audio._pttsOnTimeUpdate = onTimeUpdate;
+  audio.addEventListener('timeupdate', onTimeUpdate);
+  highlightWordOnPage(sentence, 0);
+}
+
+function highlightWordOnPage(sentence, wordIndex) {
   if (!state.activeTabId) return;
 
-  const words = sentence.trim().split(/\s+/).slice(0, 2).join(' ');
-  if (!words) return;
+  const sentenceClean = sentence.trim().replace(/\s+/g, ' ');
+  if (!sentenceClean) return;
 
   const goingForward = state.currentIndex >= (state._lastHighlightIndex || 0);
   state._lastHighlightIndex = state.currentIndex;
 
-  const sentenceClean = sentence.trim().replace(/\s+/g, ' ');
-  const prefix = sentenceClean.substring(0, 80);
+  const prefix = sentenceClean.substring(0, 120);
   const sentencePattern = buildFlexPattern(prefix);
-  const hlPattern = buildFlexPattern(words);
+  const words = sentenceClean.split(/\s+/).filter(Boolean);
+  if (!words[wordIndex]) return;
 
   browser.tabs.executeScript(state.activeTabId, {
     code: `
@@ -749,7 +798,7 @@ function highlightOnPage(sentence) {
         if (!document.getElementById('ptts-highlight-style')) {
           var style = document.createElement('style');
           style.id = 'ptts-highlight-style';
-          style.textContent = '.ptts-highlight { background: linear-gradient(90deg, #0095ff44, #7b2ff744); border-radius: 2px; padding: 0 1px; }';
+          style.textContent = '.ptts-highlight { background: rgba(255, 235, 59, 0.92); color: #141414; border-radius: 3px; padding: 0 2px; box-shadow: 0 0 10px rgba(255, 235, 59, 0.65); }';
           document.head.appendChild(style);
         }
 
@@ -778,13 +827,28 @@ function highlightOnPage(sentence) {
         }
         if (foundPos < 0) return;
 
-        window.__pttsPos = foundPos + matchLen;
+        var sentenceSlice = fullText.substring(foundPos, foundPos + matchLen);
+        var wordRe = /\\S+/g;
+        var wm;
+        var wi = 0;
+        var relStart = -1;
+        var relLen = 0;
+        while ((wm = wordRe.exec(sentenceSlice)) !== null) {
+          if (wi === ${wordIndex}) {
+            relStart = wm.index;
+            relLen = wm[0].length;
+            break;
+          }
+          wi++;
+        }
+        if (relStart < 0) return;
 
-        var hlRegex = new RegExp(${JSON.stringify(hlPattern)});
-        var hlMatch = hlRegex.exec(fullText.substring(foundPos));
-        if (!hlMatch) return;
-        var hlStart = foundPos + hlMatch.index;
-        var hlLen = hlMatch[0].length;
+        var hlStart = foundPos + relStart;
+        var hlLen = relLen;
+
+        if (${wordIndex} === ${words.length - 1}) {
+          window.__pttsPos = foundPos + matchLen;
+        }
 
         var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
         var offset = 0;

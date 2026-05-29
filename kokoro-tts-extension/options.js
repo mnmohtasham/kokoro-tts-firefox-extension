@@ -14,14 +14,26 @@ const elements = {
   openaiCard: document.getElementById('openaiCard'),
   excludedSites: document.getElementById('excludedSites'),
   showFloatingButtons: document.getElementById('showFloatingButtons'),
+  lanChip: document.getElementById('lanChip'),
   lanStatus: document.getElementById('lanStatus'),
   lanStatusText: document.getElementById('lanStatusText'),
+  vpnChip: document.getElementById('vpnChip'),
   vpnStatus: document.getElementById('vpnStatus'),
   vpnStatusText: document.getElementById('vpnStatusText'),
-  testBtn: document.getElementById('testBtn'),
+  localAiChip: document.getElementById('localAiChip'),
+  localAiActiveText: document.getElementById('localAiActiveText'),
+  ollamaLocalStatus: document.getElementById('ollamaLocalStatus'),
+  ollamaStatusText: document.getElementById('ollamaStatusText'),
+  lmStudioLocalStatus: document.getElementById('lmStudioLocalStatus'),
+  lmStudioStatusText: document.getElementById('lmStudioStatusText'),
+  llamaCppLocalStatus: document.getElementById('llamaCppLocalStatus'),
+  llamaCppStatusText: document.getElementById('llamaCppStatusText'),
   saveBtn: document.getElementById('saveBtn'),
   savedMsg: document.getElementById('savedMsg')
 };
+
+let checkDebounceTimer = null;
+const AUTO_CHECK_MS = 10000;
 
 const DEFAULT_EXCLUDED = [
   'youtube.com',
@@ -210,7 +222,7 @@ async function refreshSummaryModelChoices(kokoroUrl, provider, selectedModel) {
     return;
   }
   if (provider === 'ollama') {
-    await loadLmStudioModels(elements.ollamaBaseUrl.value || 'http://127.0.0.1:11434', selectedModel);
+    await loadOllamaModels(kokoroUrl, selectedModel);
     return;
   }
   if (provider === 'lm studio') {
@@ -268,8 +280,7 @@ async function loadSettings() {
   if (data.mode) elements.defaultMode.value = data.mode;
   elements.excludedSites.value = (data.excludedSites || DEFAULT_EXCLUDED).join('\n');
   if (elements.showFloatingButtons) {
-    const on = (data.showFloatingButtons !== false);
-    elements.showFloatingButtons.value = on ? 'on' : 'off';
+    elements.showFloatingButtons.checked = data.showFloatingButtons !== false;
   }
 
   elements.summaryProvider.value = data.summaryProvider || 'ollama';
@@ -290,9 +301,30 @@ async function loadSettings() {
   await refreshSummaryModelChoices(apiUrl, elements.summaryProvider.value, data.summaryModel || '');
 }
 
-async function testConnection(url, statusDot, statusText) {
-  statusText.textContent = 'Checking...';
-  statusDot.classList.remove('offline');
+function setEndpointChip(chipEl, textEl, state, label) {
+  if (!chipEl || !textEl) return;
+  chipEl.classList.remove('online', 'offline');
+  if (state === 'checking') {
+    textEl.textContent = '…';
+    return;
+  }
+  chipEl.classList.add(state === 'ok' ? 'online' : 'offline');
+  textEl.textContent = state === 'ok' ? label : 'Offline';
+}
+
+function setLocalRow(wrapperEl, textEl, state) {
+  if (!wrapperEl || !textEl) return;
+  wrapperEl.classList.remove('online', 'offline');
+  if (state === 'checking') {
+    textEl.textContent = '…';
+    return;
+  }
+  wrapperEl.classList.add(state === 'ok' ? 'online' : 'offline');
+  textEl.textContent = state === 'ok' ? 'Online' : 'Offline';
+}
+
+async function testServerConnection(url) {
+  if (!url || !String(url).trim()) return false;
   try {
     const t = withTimeout(3000);
     let response;
@@ -301,23 +333,125 @@ async function testConnection(url, statusDot, statusText) {
     } finally {
       t.cancel();
     }
-    const data = await response.json();
+    const data = await response.json().catch(() => null);
     const st = data && data.status;
-    if (st === 'ok' || st === 'healthy') {
-      statusDot.classList.remove('offline');
-      statusText.textContent = 'Connected';
-    } else {
-      throw new Error('Not ok');
-    }
+    return st === 'ok' || st === 'healthy';
   } catch {
-    statusDot.classList.add('offline');
-    statusText.textContent = 'Unavailable';
+    return false;
   }
 }
 
-function testConnections() {
-  testConnection(elements.lanUrl.value, elements.lanStatus, elements.lanStatusText);
-  testConnection(elements.vpnUrl.value, elements.vpnStatus, elements.vpnStatusText);
+async function testOllamaConnection(baseUrl, kokoroUrl) {
+  let url = (baseUrl && String(baseUrl).trim())
+    ? String(baseUrl).trim().replace(/\/+$/, '')
+    : '';
+  if (!url) url = getOllamaBaseUrl(kokoroUrl || elements.lanUrl.value);
+  if (!url) return false;
+  try {
+    const t = withTimeout(3000);
+    let res;
+    try {
+      res = await fetch(`${url}/api/tags`, { signal: t.signal });
+    } finally {
+      t.cancel();
+    }
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function testOpenAICompatibleConnection(baseUrl) {
+  const base = (baseUrl || '').trim().replace(/\/+$/, '');
+  if (!base) return false;
+  try {
+    const t = withTimeout(3000);
+    let res;
+    try {
+      res = await fetch(`${base}/v1/models`, { signal: t.signal });
+    } finally {
+      t.cancel();
+    }
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function testConnections() {
+  setEndpointChip(elements.lanChip, elements.lanStatusText, 'checking');
+  setEndpointChip(elements.vpnChip, elements.vpnStatusText, 'checking');
+
+  const [lanOk, vpnOk] = await Promise.all([
+    testServerConnection(elements.lanUrl.value),
+    testServerConnection(elements.vpnUrl.value)
+  ]);
+
+  setEndpointChip(elements.lanChip, elements.lanStatusText, lanOk ? 'ok' : 'fail', 'Online');
+  setEndpointChip(elements.vpnChip, elements.vpnStatusText, vpnOk ? 'ok' : 'fail', 'Online');
+}
+
+async function testAllLocalAi() {
+  const kokoroUrl = elements.lanUrl.value;
+  setLocalRow(elements.ollamaLocalStatus, elements.ollamaStatusText, 'checking');
+  setLocalRow(elements.lmStudioLocalStatus, elements.lmStudioStatusText, 'checking');
+  setLocalRow(elements.llamaCppLocalStatus, elements.llamaCppStatusText, 'checking');
+
+  const [ollamaOk, lmOk, llamaOk] = await Promise.all([
+    testOllamaConnection(elements.ollamaBaseUrl.value, kokoroUrl),
+    testOpenAICompatibleConnection(elements.lmStudioBaseUrl.value || 'http://127.0.0.1:1234'),
+    testOpenAICompatibleConnection(elements.llamaCppBaseUrl.value || 'http://127.0.0.1:8080')
+  ]);
+
+  setLocalRow(elements.ollamaLocalStatus, elements.ollamaStatusText, ollamaOk ? 'ok' : 'fail');
+  setLocalRow(elements.lmStudioLocalStatus, elements.lmStudioStatusText, lmOk ? 'ok' : 'fail');
+  setLocalRow(elements.llamaCppLocalStatus, elements.llamaCppStatusText, llamaOk ? 'ok' : 'fail');
+
+  await updateActiveLocalAiStatus({ ollamaOk, lmOk, llamaOk });
+}
+
+async function updateActiveLocalAiStatus(prefetched) {
+  if (!elements.localAiChip || !elements.localAiActiveText) return;
+
+  const provider = elements.summaryProvider.value;
+  const kokoroUrl = elements.lanUrl.value;
+
+  let label = provider;
+  let ok = false;
+
+  if (provider === 'openAI') {
+    label = 'OpenAI';
+    elements.localAiChip.classList.remove('online', 'offline');
+    elements.localAiActiveText.textContent = 'Cloud';
+    return;
+  }
+
+  if (prefetched) {
+    if (provider === 'ollama') ok = prefetched.ollamaOk;
+    if (provider === 'lm studio') ok = prefetched.lmOk;
+    if (provider === 'llama.cpp') ok = prefetched.llamaOk;
+  } else {
+    if (provider === 'ollama') ok = await testOllamaConnection(elements.ollamaBaseUrl.value, kokoroUrl);
+    if (provider === 'lm studio') ok = await testOpenAICompatibleConnection(elements.lmStudioBaseUrl.value);
+    if (provider === 'llama.cpp') ok = await testOpenAICompatibleConnection(elements.llamaCppBaseUrl.value);
+  }
+
+  elements.localAiChip.classList.remove('online', 'offline');
+  elements.localAiChip.classList.add(ok ? 'online' : 'offline');
+  elements.localAiActiveText.textContent = ok ? 'Online' : 'Offline';
+}
+
+function scheduleStatusChecks() {
+  if (checkDebounceTimer) clearTimeout(checkDebounceTimer);
+  checkDebounceTimer = setTimeout(() => {
+    testConnections();
+    testAllLocalAi();
+  }, 450);
+}
+
+function runAllStatusChecks() {
+  testConnections();
+  testAllLocalAi();
 }
 
 async function saveSettings() {
@@ -344,15 +478,15 @@ async function saveSettings() {
     openaiApiKey: elements.openaiApiKey.value,
     openaiBaseUrl: elements.openaiBaseUrl.value,
     openaiModel: elements.openaiModel.value,
-    showFloatingButtons: elements.showFloatingButtons ? (elements.showFloatingButtons.value === 'on') : true,
+    showFloatingButtons: elements.showFloatingButtons ? elements.showFloatingButtons.checked : true,
     excludedSites
   });
 
   elements.savedMsg.classList.add('show');
   setTimeout(() => elements.savedMsg.classList.remove('show'), 2000);
+  runAllStatusChecks();
 }
 
-elements.testBtn.addEventListener('click', testConnections);
 elements.saveBtn.addEventListener('click', saveSettings);
 
 elements.summaryProvider.addEventListener('change', async () => {
@@ -363,7 +497,20 @@ elements.summaryProvider.addEventListener('change', async () => {
   applyProviderDefaultsIfEmpty(elements.summaryProvider.value);
   updateProviderVisibility();
   await refreshSummaryModelChoices(apiUrl, elements.summaryProvider.value, data.summaryModel || '');
+  updateActiveLocalAiStatus();
 });
 
-loadSettings();
-testConnections();
+[
+  elements.lanUrl,
+  elements.vpnUrl,
+  elements.ollamaBaseUrl,
+  elements.lmStudioBaseUrl,
+  elements.llamaCppBaseUrl
+].forEach((el) => {
+  if (el) el.addEventListener('input', scheduleStatusChecks);
+});
+
+loadSettings().then(() => {
+  runAllStatusChecks();
+  setInterval(runAllStatusChecks, AUTO_CHECK_MS);
+});

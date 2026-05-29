@@ -1,115 +1,346 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Page TTS Options</title>
   <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --online: #39ff14;
+      --online-dim: rgba(57, 255, 20, 0.14);
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.18);
+      --accent-border: rgba(56, 189, 248, 0.35);
+      --glass: rgba(10, 14, 24, 0.78);
+      --card: rgba(255, 255, 255, 0.06);
+      --stroke: rgba(255, 255, 255, 0.14);
+      --text: #eaf0ff;
+      --muted: rgba(234, 240, 255, 0.55);
+      --danger: #fb7185;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      --btn-radius: 12px;
+    }
+
     body {
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       max-width: 560px;
       margin: 28px auto;
       padding: 18px;
-      background:
-        radial-gradient(1200px 700px at 10% 0%, rgba(56,189,248,0.18), transparent 55%),
-        radial-gradient(900px 600px at 90% 10%, rgba(167,139,250,0.18), transparent 55%),
-        linear-gradient(180deg, #0b1220, #070a12);
-      color: #eaf0ff;
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      color: var(--text);
     }
+
     h1 {
       font-size: 20px;
       margin-bottom: 14px;
       letter-spacing: 0.3px;
-      color: #eaf0ff;
+      color: var(--text);
     }
+
     .card {
-      background: rgba(255,255,255,0.06);
-      border-radius: 16px;
+      background: var(--card);
+      border-radius: var(--btn-radius);
       padding: 16px;
       margin-bottom: 14px;
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: 0 14px 34px rgba(0,0,0,0.35);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
-    .card h2 { font-size: 14px; margin-bottom: 12px; color: rgba(234,240,255,0.78); letter-spacing: 0.2px; }
+
+    .card h2 {
+      font-size: 14px;
+      margin: 0;
+      color: rgba(234, 240, 255, 0.85);
+      letter-spacing: 0.2px;
+    }
+
+    .card-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .endpoint-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .status-chip.online {
+      background: var(--online-dim);
+      border-color: rgba(57, 255, 20, 0.35);
+      color: var(--online);
+    }
+
+    .status-chip.offline {
+      background: rgba(251, 113, 133, 0.12);
+      border-color: rgba(251, 113, 133, 0.35);
+      color: var(--danger);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .status-chip.online .status-dot {
+      background: var(--online);
+      box-shadow: 0 0 6px var(--online);
+    }
+
+    .status-chip.offline .status-dot {
+      background: var(--danger);
+      box-shadow: none;
+    }
+
     .row {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
       padding: 12px 0;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--stroke);
     }
+
     .row:last-child { border-bottom: none; }
-    label { font-size: 13px; color: rgba(234,240,255,0.78); }
+
+    .row-stack {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .row-stack label { align-self: flex-start; }
+
+    label { font-size: 13px; color: rgba(234, 240, 255, 0.78); }
+
     input, select, textarea {
       padding: 9px 12px;
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius-sm);
       font-size: 13px;
-      background: rgba(255,255,255,0.06);
-      color: #eaf0ff;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
       outline: none;
     }
-    input[type="text"], input[type="password"] { width: 260px; }
-    input:focus, select:focus, textarea:focus { border-color: rgba(56,189,248,0.55); box-shadow: 0 0 0 4px rgba(56,189,248,0.14); }
-    .help { font-size: 12px; color: rgba(234,240,255,0.55); margin-top: 6px; }
-    .status { display: flex; align-items: center; gap: 8px; }
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #22c55e;
-      box-shadow: 0 0 0 4px rgba(34,197,94,0.12);
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      max-width: 280px;
     }
-    .status-dot.offline { background: #fb7185; box-shadow: 0 0 0 4px rgba(251,113,133,0.14); }
-    button {
+
+    .row-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      justify-content: flex-end;
+      min-width: 0;
+    }
+
+    .row-input input { flex: 1; min-width: 0; max-width: none; }
+
+    .local-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .local-status .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--muted);
+    }
+
+    .local-status.online { color: var(--online); }
+    .local-status.online .status-dot {
+      background: var(--online);
+      box-shadow: 0 0 6px var(--online);
+    }
+
+    .local-status.offline { color: var(--danger); }
+    .local-status.offline .status-dot { background: var(--danger); }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-border);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    .help {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.45;
+    }
+
+    .help code {
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    button.primary-btn {
       padding: 10px 18px;
-      background: linear-gradient(135deg, rgba(56,189,248,0.95), rgba(167,139,250,0.95));
-      color: #08101f;
-      border: none;
-      border-radius: 12px;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--text);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--btn-radius);
       cursor: pointer;
       font-size: 13px;
       font-weight: 650;
-      transition: transform 0.15s ease, filter 0.15s ease;
+      transition: transform 0.15s ease, background 0.15s ease;
     }
-    button:hover { transform: translateY(-1px); filter: brightness(1.05); }
-    button:active { transform: translateY(0px) scale(0.99); }
+
+    button.primary-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(56, 189, 248, 0.18);
+    }
+
     .saved {
-      color: #00c853;
+      color: var(--accent);
       font-size: 14px;
       margin-left: 10px;
       opacity: 0;
       transition: opacity 0.3s;
     }
+
     .saved.show { opacity: 1; }
+
+    #excludedSites {
+      width: 100%;
+      font-family: ui-monospace, monospace;
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 4px 0;
+    }
+
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      padding: 0;
+      border: none;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      cursor: pointer;
+      border: 1px solid var(--stroke);
+      transition: background 0.2s ease;
+    }
+
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 2px;
+      top: 2px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+    }
+
+    .switch input:checked + .slider {
+      background: rgba(56, 189, 248, 0.35);
+      border-color: var(--accent-border);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(20px);
+    }
+
+    .footer-actions {
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    #openaiCard { display: none; }
   </style>
 </head>
 <body>
   <h1>Page TTS Options</h1>
 
   <div class="card">
-    <h2>API Endpoints</h2>
-    <div class="row">
-      <label>IP1 Address</label>
-      <input type="text" id="lanUrl" value="http://127.0.0.1:8880">
+    <div class="card-head">
+      <h2>API Endpoints</h2>
+      <div class="endpoint-status">
+        <div class="status-chip" id="lanChip">
+          <span class="status-dot" id="lanStatus"></span>
+          <span>Server 1 · <span id="lanStatusText">…</span></span>
+        </div>
+        <div class="status-chip" id="vpnChip">
+          <span class="status-dot" id="vpnStatus"></span>
+          <span>Server 2 · <span id="vpnStatusText">…</span></span>
+        </div>
+      </div>
     </div>
     <div class="row">
-      <label>IP2 Address</label>
-      <input type="text" id="vpnUrl" value="http://127.0.0.1:8880">
+      <label for="lanUrl">Server 1 address</label>
+      <div class="row-input">
+        <input type="text" id="lanUrl" value="http://127.0.0.1:8880">
+      </div>
     </div>
-    <p class="help">Kokoro TTS server base URL (no trailing slash required)</p>
+    <div class="row">
+      <label for="vpnUrl">Server 2 address</label>
+      <div class="row-input">
+        <input type="text" id="vpnUrl" value="http://127.0.0.1:8880">
+      </div>
+    </div>
+    <p class="help">Kokoro TTS server base URL (no trailing slash required). Connection is checked automatically.</p>
   </div>
 
   <div class="card">
-    <h2>Default Settings</h2>
+    <h2 style="margin-bottom:12px;">Default Settings</h2>
     <div class="row">
-      <label>Default Voice</label>
+      <label for="defaultVoice">Default Voice</label>
       <select id="defaultVoice">
         <option value="">Loading voices...</option>
       </select>
     </div>
     <div class="row">
-      <label>Default Mode</label>
+      <label for="defaultMode">Default Mode</label>
       <select id="defaultMode">
         <option value="fast">Fast</option>
         <option value="balanced" selected>Balanced</option>
@@ -117,7 +348,7 @@
       </select>
     </div>
     <div class="row">
-      <label>Summarization Provider</label>
+      <label for="summaryProvider">Summarization Provider</label>
       <select id="summaryProvider">
         <option value="ollama">ollama</option>
         <option value="lm studio">lm studio</option>
@@ -126,7 +357,7 @@
       </select>
     </div>
     <div class="row">
-      <label>Summary Model</label>
+      <label for="summaryModel">Summary Model</label>
       <select id="summaryModel">
         <option value="">Auto (recommended)</option>
       </select>
@@ -135,78 +366,85 @@
   </div>
 
   <div class="card">
-    <h2>Local AI</h2>
-    <div class="row">
-      <label>Ollama Base URL</label>
-      <input type="text" id="ollamaBaseUrl" placeholder="Auto (same host as Kokoro)">
+    <div class="card-head">
+      <h2>Local AI</h2>
+      <div class="endpoint-status">
+        <div class="status-chip" id="localAiChip">
+          <span class="status-dot" id="localAiActiveDot"></span>
+          <span>Active · <span id="localAiActiveText">…</span></span>
+        </div>
+      </div>
     </div>
     <div class="row">
-      <label>LM Studio Base URL</label>
-      <input type="text" id="lmStudioBaseUrl" value="http://127.0.0.1:1234">
+      <label for="ollamaBaseUrl">Ollama</label>
+      <div class="row-input">
+        <input type="text" id="ollamaBaseUrl" placeholder="Auto (same host as Kokoro)">
+        <span class="local-status" id="ollamaLocalStatus">
+          <span class="status-dot"></span>
+          <span id="ollamaStatusText">…</span>
+        </span>
+      </div>
     </div>
     <div class="row">
-      <label>llama.cpp Base URL</label>
-      <input type="text" id="llamaCppBaseUrl" value="http://127.0.0.1:8080">
+      <label for="lmStudioBaseUrl">LM Studio</label>
+      <div class="row-input">
+        <input type="text" id="lmStudioBaseUrl" value="http://127.0.0.1:1234">
+        <span class="local-status" id="lmStudioLocalStatus">
+          <span class="status-dot"></span>
+          <span id="lmStudioStatusText">…</span>
+        </span>
+      </div>
     </div>
-    <p class="help">Both should be OpenAI-compatible servers (provide <code>/v1/chat/completions</code>). Defaults match common ports; you can override them here.</p>
+    <div class="row">
+      <label for="llamaCppBaseUrl">llama.cpp</label>
+      <div class="row-input">
+        <input type="text" id="llamaCppBaseUrl" value="http://127.0.0.1:8080">
+        <span class="local-status" id="llamaCppLocalStatus">
+          <span class="status-dot"></span>
+          <span id="llamaCppStatusText">…</span>
+        </span>
+      </div>
+    </div>
+    <p class="help">OpenAI-compatible servers should expose <code>/v1/chat/completions</code>. Status is checked automatically.</p>
   </div>
 
   <div class="card" id="openaiCard">
-    <h2>OpenAI</h2>
+    <h2 style="margin-bottom:12px;">OpenAI</h2>
     <div class="row">
-      <label>API Key</label>
+      <label for="openaiApiKey">API Key</label>
       <input type="password" id="openaiApiKey" placeholder="sk-...">
     </div>
     <div class="row">
-      <label>Base URL</label>
+      <label for="openaiBaseUrl">Base URL</label>
       <input type="text" id="openaiBaseUrl" value="https://api.openai.com">
     </div>
     <div class="row">
-      <label>Model (optional)</label>
+      <label for="openaiModel">Model (optional)</label>
       <input type="text" id="openaiModel" placeholder="e.g. gpt-4o-mini">
     </div>
     <p class="help">Your key is stored in the browser's extension storage on this device.</p>
   </div>
 
   <div class="card">
-    <h2>Excluded Sites</h2>
-    <p class="help" style="margin-bottom:10px;">Floating buttons are hidden when the URL contains a line pattern (e.g. youtube.com).</p>
-    <textarea id="excludedSites" rows="6" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:monospace;resize:vertical;"></textarea>
+    <h2 style="margin-bottom:12px;">Excluded Sites</h2>
+    <p class="help" style="margin-top:0;margin-bottom:10px;">Floating buttons are hidden when the URL contains a line pattern (e.g. youtube.com).</p>
+    <textarea id="excludedSites" rows="6"></textarea>
   </div>
 
   <div class="card">
-    <h2>In-page Controls</h2>
-    <div class="row">
-      <label>Show floating buttons on pages</label>
-      <select id="showFloatingButtons">
-        <option value="on">On</option>
-        <option value="off">Off</option>
-      </select>
+    <h2 style="margin-bottom:12px;">In-page Controls</h2>
+    <div class="toggle-row">
+      <label for="showFloatingButtons">Show floating buttons on pages</label>
+      <label class="switch">
+        <input type="checkbox" id="showFloatingButtons" checked>
+        <span class="slider"></span>
+      </label>
     </div>
     <p class="help">If off, you can still control everything from the toolbar popup.</p>
   </div>
 
-  <div class="card">
-    <h2>Connection Status</h2>
-    <div class="row">
-      <label>IP1</label>
-      <div class="status">
-        <span class="status-dot" id="lanStatus"></span>
-        <span id="lanStatusText">Checking...</span>
-      </div>
-    </div>
-    <div class="row">
-      <label>IP2</label>
-      <div class="status">
-        <span class="status-dot" id="vpnStatus"></span>
-        <span id="vpnStatusText">Checking...</span>
-      </div>
-    </div>
-    <button id="testBtn" style="margin-top: 15px;">Test Connections</button>
-  </div>
-
-  <div style="text-align: center;">
-    <button id="saveBtn">Save Settings</button>
+  <div class="footer-actions">
+    <button type="button" class="primary-btn" id="saveBtn">Save Settings</button>
     <span class="saved" id="savedMsg">Saved!</span>
   </div>
 

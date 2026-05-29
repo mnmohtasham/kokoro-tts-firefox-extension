@@ -52,13 +52,34 @@
     setTimeout(() => t.remove(), 4000);
   }
 
+  const PTTS_BTN = 'padding:6px 10px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:rgba(234,240,255,0.92);border-radius:12px;cursor:pointer;font-size:11px;flex-shrink:0;';
+  const PTTS_BTN_ACCENT = 'padding:6px 10px;border:1px solid rgba(56,189,248,0.35);background:rgba(56,189,248,0.10);color:rgba(234,240,255,0.95);border-radius:12px;cursor:pointer;font-size:11px;flex-shrink:0;';
+  const PTTS_BTN_ICON = 'width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:rgba(234,240,255,0.92);border-radius:12px;cursor:pointer;font-size:14px;line-height:1;padding:0;flex-shrink:0;';
+
   function showSummaryOverlay(result) {
     const existing = document.getElementById('ptts-summary-overlay');
     if (existing) existing.remove();
 
+    if (!document.getElementById('ptts-summary-expand-style')) {
+      const expandStyle = document.createElement('style');
+      expandStyle.id = 'ptts-summary-expand-style';
+      expandStyle.textContent = `
+        #ptts-summary-overlay.ptts-summary-expanded {
+          top: max(10px, env(safe-area-inset-top));
+          right: max(10px, env(safe-area-inset-right));
+          left: max(10px, env(safe-area-inset-left));
+          bottom: max(10px, env(safe-area-inset-bottom));
+          width: auto !important;
+          max-width: none !important;
+          max-height: none !important;
+        }
+      `;
+      document.head.appendChild(expandStyle);
+    }
+
     const overlay = document.createElement('div');
     overlay.id = 'ptts-summary-overlay';
-    overlay.style.cssText = 'position:fixed;top:18px;right:18px;max-width:520px;width:92vw;max-height:82vh;display:flex;flex-direction:column;background:rgba(10,14,24,0.78);color:rgba(234,240,255,0.92);border:1px solid rgba(255,255,255,0.14);border-radius:18px;z-index:999999;box-shadow:0 20px 50px rgba(0,0,0,0.45);font-size:14px;line-height:1.55;backdrop-filter: blur(14px);';
+    overlay.style.cssText = 'position:fixed;top:18px;right:18px;max-width:520px;width:92vw;max-height:82vh;display:flex;flex-direction:column;background:rgba(10,14,24,0.78);color:rgba(234,240,255,0.92);border:1px solid rgba(255,255,255,0.14);border-radius:12px;z-index:999999;box-shadow:0 20px 50px rgba(0,0,0,0.45);font-size:14px;line-height:1.55;backdrop-filter: blur(14px);';
 
     const header = document.createElement('div');
     header.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.04);';
@@ -78,7 +99,7 @@
     const summaryReadBtn = document.createElement('button');
     summaryReadBtn.textContent = 'Read';
     summaryReadBtn.setAttribute('data-ptts-summary-read', '1');
-    summaryReadBtn.style.cssText = 'padding:6px 10px;border:1px solid rgba(56,189,248,0.35);background:rgba(56,189,248,0.10);color:rgba(234,240,255,0.95);border-radius:12px;cursor:pointer;font-size:11px;flex-shrink:0;';
+    summaryReadBtn.style.cssText = PTTS_BTN_ACCENT;
     summaryReadBtn.onclick = function () {
       const label = summaryReadBtn.textContent;
       if (label === 'Pause') {
@@ -93,7 +114,7 @@
 
     const copyBtn = document.createElement('button');
     copyBtn.textContent = 'Copy';
-    copyBtn.style.cssText = 'padding:6px 10px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:rgba(234,240,255,0.92);border-radius:12px;cursor:pointer;font-size:11px;flex-shrink:0;';
+    copyBtn.style.cssText = PTTS_BTN;
     copyBtn.onclick = function () {
       navigator.clipboard.writeText(result.summary).then(function () {
         copyBtn.textContent = 'Copied!';
@@ -104,17 +125,27 @@
 
     const fontMinus = document.createElement('button');
     fontMinus.textContent = '−';
-    fontMinus.style.cssText = 'width:28px;height:28px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:rgba(234,240,255,0.92);border-radius:12px;cursor:pointer;font-size:14px;line-height:1;padding:0;flex-shrink:0;';
+    fontMinus.style.cssText = PTTS_BTN_ICON;
     header.appendChild(fontMinus);
 
     const fontPlus = document.createElement('button');
     fontPlus.textContent = '+';
-    fontPlus.style.cssText = 'width:28px;height:28px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:rgba(234,240,255,0.92);border-radius:12px;cursor:pointer;font-size:14px;line-height:1;padding:0;flex-shrink:0;';
+    fontPlus.style.cssText = PTTS_BTN_ICON;
     header.appendChild(fontPlus);
+
+    const expandBtn = document.createElement('button');
+    expandBtn.textContent = '⤢';
+    expandBtn.setAttribute('aria-label', 'Expand summary');
+    expandBtn.style.cssText = PTTS_BTN_ICON;
+    expandBtn.onclick = function () {
+      const expanded = overlay.classList.toggle('ptts-summary-expanded');
+      expandBtn.textContent = expanded ? '⤡' : '⤢';
+    };
+    header.appendChild(expandBtn);
 
     const close = document.createElement('button');
     close.textContent = '✕';
-    close.style.cssText = 'background:none;border:none;font-size:14px;cursor:pointer;color:rgba(234,240,255,0.70);padding:0 4px;flex-shrink:0;';
+    close.style.cssText = PTTS_BTN_ICON;
     close.onclick = function () { overlay.remove(); };
     header.appendChild(close);
 
@@ -183,7 +214,12 @@
         copyBtn.style.background = 'rgba(10,14,24,0.04)';
         fontMinus.style.color = 'rgba(10,14,24,0.92)';
         fontPlus.style.color = 'rgba(10,14,24,0.92)';
-        close.style.color = 'rgba(10,14,24,0.60)';
+        expandBtn.style.color = 'rgba(10,14,24,0.92)';
+        expandBtn.style.borderColor = 'rgba(10,14,24,0.12)';
+        expandBtn.style.background = 'rgba(10,14,24,0.04)';
+        close.style.color = 'rgba(10,14,24,0.92)';
+        close.style.borderColor = 'rgba(10,14,24,0.12)';
+        close.style.background = 'rgba(10,14,24,0.04)';
       } else {
         themeBtn.style.background = 'rgba(255,255,255,0.06)';
         themeBtn.style.borderColor = 'rgba(255,255,255,0.14)';
@@ -203,7 +239,12 @@
         copyBtn.style.background = 'rgba(255,255,255,0.06)';
         fontMinus.style.color = 'rgba(234,240,255,0.92)';
         fontPlus.style.color = 'rgba(234,240,255,0.92)';
-        close.style.color = 'rgba(234,240,255,0.70)';
+        expandBtn.style.color = 'rgba(234,240,255,0.92)';
+        expandBtn.style.borderColor = 'rgba(255,255,255,0.14)';
+        expandBtn.style.background = 'rgba(255,255,255,0.06)';
+        close.style.color = 'rgba(234,240,255,0.92)';
+        close.style.borderColor = 'rgba(255,255,255,0.14)';
+        close.style.background = 'rgba(255,255,255,0.06)';
       }
       browser.storage.local.set({ summaryTheme: t }).catch(() => {});
     }
@@ -254,7 +295,7 @@
           align-items: center;
           gap: 10px;
           padding: 10px;
-          border-radius: 18px;
+          border-radius: 12px;
           background: rgba(10, 14, 24, 0.40);
           border: 1px solid rgba(255,255,255,0.14);
           backdrop-filter: blur(12px);
@@ -263,7 +304,7 @@
           width: 52px;
           height: 52px;
           border: 1px solid rgba(255,255,255,0.14);
-          border-radius: 18px;
+          border-radius: 12px;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -272,22 +313,10 @@
           backdrop-filter: blur(10px);
           transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
           position: relative;
-          overflow: hidden;
         }
-        .ptts-fab::before {
-          content: '';
-          position: absolute;
-          inset: -40%;
-          background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.45), transparent 40%);
-          transform: rotate(20deg);
-          opacity: 0.6;
-        }
-        .ptts-fab:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.10); }
+        .ptts-fab:hover { transform: translateY(-2px); border-color: rgba(56,189,248,0.35); background: rgba(56,189,248,0.10); }
         .ptts-fab:active { transform: translateY(0px) scale(0.98); }
         .ptts-fab svg { width: 22px; height: 22px; fill: #fff; z-index: 1; }
-        #ptts-btn-summarize { background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(167,139,250,0.25)); }
-        #ptts-btn-read { background: linear-gradient(135deg, rgba(34,197,94,0.22), rgba(56,189,248,0.22)); }
-        #ptts-btn-ask { background: linear-gradient(135deg, rgba(251,113,133,0.22), rgba(167,139,250,0.22)); }
         #ptts-chat {
           display: none;
           position: fixed;
@@ -300,7 +329,7 @@
           flex-direction: column;
           background: rgba(10, 14, 24, 0.70);
           border: 1px solid rgba(255,255,255,0.14);
-          border-radius: 18px;
+          border-radius: 12px;
           box-shadow: 0 20px 50px rgba(0,0,0,0.45);
           z-index: 999998;
           overflow: hidden;
@@ -317,7 +346,8 @@
           background: rgba(255,255,255,0.04);
         }
         #ptts-chat-title { font-weight: 700; letter-spacing: 0.2px; font-size: 13px; margin-right:auto; }
-        #ptts-chat-close {
+        #ptts-chat-close,
+        #ptts-chat-expand {
           width: 32px;
           height: 32px;
           display:flex;
@@ -391,22 +421,6 @@
           color: rgba(10,14,24,0.85);
         }
 
-        #ptts-chat-expand {
-          width: 32px;
-          height: 32px;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          border: 1px solid rgba(255,255,255,0.14);
-          background: rgba(255,255,255,0.06);
-          color: rgba(234,240,255,0.9);
-          border-radius: 12px;
-          cursor: pointer;
-          font-size: 14px;
-          line-height: 1;
-          padding: 0;
-        }
-
         #ptts-chat.ptts-expanded {
           right: max(10px, env(safe-area-inset-right));
           left: max(10px, env(safe-area-inset-left));
@@ -414,7 +428,7 @@
           bottom: max(10px, env(safe-area-inset-bottom));
           width: auto;
           height: auto;
-          border-radius: 18px;
+          border-radius: 12px;
         }
         #ptts-chat-messages {
           padding: 12px;
@@ -458,13 +472,15 @@
           overflow: auto;
         }
         #ptts-chat-send {
-          border: 0;
-          background: linear-gradient(135deg, rgba(56,189,248,0.95), rgba(167,139,250,0.95));
-          color: rgba(10, 14, 24, 0.92);
-          border-radius: 14px;
+          border: 1px solid rgba(56,189,248,0.35);
+          background: rgba(56,189,248,0.12);
+          color: rgba(234,240,255,0.95);
+          border-radius: 12px;
           padding: 0 14px;
+          min-height: 40px;
           cursor: pointer;
           font-weight: 700;
+          font-size: 13px;
         }
         #ptts-chat-send:disabled { opacity: 0.6; cursor: default; }
 
@@ -504,7 +520,7 @@
           color: rgba(10,14,24,0.85);
         }
         #ptts-chat.ptts-theme-day #ptts-chat-send {
-          background: rgba(56,189,248,0.12);
+          background: rgba(56,189,248,0.14);
           border: 1px solid rgba(56,189,248,0.35);
           color: rgba(10,14,24,0.92);
         }

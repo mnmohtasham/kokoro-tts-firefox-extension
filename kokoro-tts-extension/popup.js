@@ -6,9 +6,11 @@ document.addEventListener('DOMContentLoaded', init);
 function init() {
   elements.statusDot = document.getElementById('statusDot');
   elements.statusText = document.getElementById('statusText');
+  elements.statusPill = document.getElementById('statusPill');
   elements.networkSwitch = document.getElementById('networkSwitch');
   elements.lanLabel = document.getElementById('lanLabel');
   elements.vpnLabel = document.getElementById('vpnLabel');
+  elements.summarizeSub = document.getElementById('summarizeSub');
   elements.nowPlaying = document.getElementById('nowPlaying');
   elements.progressCurrent = document.getElementById('progressCurrent');
   elements.progressTotal = document.getElementById('progressTotal');
@@ -45,17 +47,25 @@ function init() {
   setInterval(checkHealth, 10000);
 }
 
+function setApiMode(mode) {
+  const isVpn = mode === 'vpn';
+  elements.networkSwitch.checked = isVpn;
+  elements.lanLabel.classList.toggle('active', !isVpn);
+  elements.vpnLabel.classList.toggle('active', isVpn);
+  browser.runtime.sendMessage({ type: 'set-api-mode', apiMode: mode });
+  setTimeout(() => {
+    checkHealth();
+    loadVoices();
+  }, 500);
+}
+
 function setupEventListeners() {
   elements.networkSwitch.addEventListener('change', () => {
-    const mode = elements.networkSwitch.checked ? 'vpn' : 'lan';
-    browser.runtime.sendMessage({ type: 'set-api-mode', apiMode: mode });
-    elements.lanLabel.classList.toggle('active', mode === 'lan');
-    elements.vpnLabel.classList.toggle('active', mode === 'vpn');
-    setTimeout(() => {
-      checkHealth();
-      loadVoices();
-    }, 500);
+    setApiMode(elements.networkSwitch.checked ? 'vpn' : 'lan');
   });
+
+  elements.lanLabel.addEventListener('click', () => setApiMode('lan'));
+  elements.vpnLabel.addEventListener('click', () => setApiMode('vpn'));
 
   elements.playPauseBtn.addEventListener('click', () => {
     browser.runtime.sendMessage({ type: 'get-state' }).then((state) => {
@@ -93,7 +103,8 @@ function setupEventListeners() {
 
   elements.summarizeBtn.addEventListener('click', () => {
     elements.summarizeBtn.disabled = true;
-    elements.summarizeBtn.textContent = 'Summarizing...';
+    elements.summarizeBtn.classList.add('is-busy');
+    if (elements.summarizeSub) elements.summarizeSub.textContent = 'Working…';
     elements.summaryLoading.style.display = 'block';
     elements.summaryResult.style.display = 'none';
     elements.summaryError.style.display = 'none';
@@ -101,7 +112,8 @@ function setupEventListeners() {
     browser.runtime.sendMessage({ type: 'summarize-page', tabId: getTargetTabId() }).then((response) => {
       elements.summaryLoading.style.display = 'none';
       elements.summarizeBtn.disabled = false;
-      elements.summarizeBtn.textContent = 'Summarize Page';
+      elements.summarizeBtn.classList.remove('is-busy');
+      if (elements.summarizeSub) elements.summarizeSub.textContent = 'Key insights';
 
       if (response && response.success) {
         elements.summaryText.textContent = response.summary;
@@ -114,7 +126,8 @@ function setupEventListeners() {
     }).catch((e) => {
       elements.summaryLoading.style.display = 'none';
       elements.summarizeBtn.disabled = false;
-      elements.summarizeBtn.textContent = 'Summarize Page';
+      elements.summarizeBtn.classList.remove('is-busy');
+      if (elements.summarizeSub) elements.summarizeSub.textContent = 'Key insights';
       elements.summaryError.textContent = `Error: ${e.message}`;
       elements.summaryError.style.display = 'block';
     });
@@ -148,8 +161,8 @@ function setupEventListeners() {
       browser.windows.create({
         url: browser.runtime.getURL(`popup.html?detached=1&tabId=${tabId}`),
         type: 'popup',
-        width: 352,
-        height: 580
+        width: 336,
+        height: 560
       });
       window.close();
     });
@@ -169,14 +182,12 @@ function updateUI(state) {
   elements.vpnLabel.classList.toggle('active', state.apiMode === 'vpn');
 
   if (state.isPlaying && state.totalSentences > 0) {
-    elements.nowPlaying.style.display = 'block';
     elements.progressCurrent.textContent = state.currentIndex + 1;
     elements.progressTotal.textContent = state.totalSentences;
     elements.progressFill.style.width = `${((state.currentIndex + 1) / state.totalSentences) * 100}%`;
     elements.playIcon.style.display = state.isPaused ? 'block' : 'none';
     elements.pauseIcon.style.display = state.isPaused ? 'none' : 'block';
   } else {
-    elements.nowPlaying.style.display = 'none';
     elements.progressFill.style.width = '0%';
     elements.progressCurrent.textContent = '0';
     elements.progressTotal.textContent = '0';
@@ -196,22 +207,28 @@ function loadState() {
   browser.runtime.sendMessage({ type: 'get-state' }).then(updateUI);
 }
 
+function setStatusOnline(isOnline, label) {
+  if (elements.statusPill) {
+    elements.statusPill.classList.toggle('offline', !isOnline);
+  }
+  if (elements.statusDot) {
+    elements.statusDot.classList.toggle('offline', !isOnline);
+  }
+  elements.statusText.textContent = label;
+}
+
 function checkHealth() {
   browser.runtime.sendMessage({ type: 'check-health' }).then((health) => {
     if (health && (health.status === 'ok' || health.status === 'healthy')) {
-      elements.statusDot.classList.remove('offline');
-      elements.statusText.textContent = 'Online';
+      setStatusOnline(true, 'ONLINE');
       updateGpuStats(health);
     } else {
-      elements.statusDot.classList.add('offline');
-      elements.statusText.textContent = health && health.error
-        ? `Offline: ${health.error}`
-        : 'Offline';
+      const err = health && health.error ? health.error : 'Offline';
+      setStatusOnline(false, err.length > 12 ? 'Offline' : err);
       gpuElements.card.style.display = 'none';
     }
   }).catch(() => {
-    elements.statusDot.classList.add('offline');
-    elements.statusText.textContent = 'Offline';
+    setStatusOnline(false, 'Offline');
     gpuElements.card.style.display = 'none';
   });
 }
@@ -228,7 +245,10 @@ function loadVoices() {
     for (const voice of voiceList) {
       const option = document.createElement('option');
       option.value = voice.id;
-      option.textContent = voice.name;
+      option.textContent = voice.id || voice.name;
+      if (voice.name && voice.name !== voice.id) {
+        option.title = voice.name;
+      }
       elements.voiceSelect.appendChild(option);
     }
     return browser.runtime.sendMessage({ type: 'get-state' });
