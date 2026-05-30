@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Kokoro TTS - Firefox",
+  "name": "Kokoro TTS web page reader",
   "version": "1.0.0",
-  "description": "Reads web pages aloud (Kokoro TTS) and summarizes pages either using local LLM servers (supports Ollama, lm studio, llama.cpp) or cloud providers(OpenAI)",
+  "description": "Read web pages using a local Kokoro TTS server. Summarization and AI chat via Llama.cpp, Ollama, or LM Studio serving any locally-hosted AI model or cloud provider(OpenAI)",
   "permissions": [
     "activeTab",
     "storage",
@@ -16,7 +16,7 @@
   "browser_action": {
     "default_icon": "icon.svg",
     "default_popup": "popup.html",
-    "default_title": "Page TTS"
+    "default_title": "Kokoro TTS reader"
   },
   "background": {
     "page": "background.html"

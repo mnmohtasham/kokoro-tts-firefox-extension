@@ -1,36 +1,32 @@
-# Page TTS (Firefox)
+# Kokoro TTS web page reader (Firefox)
 
-Read web pages aloud using a local [Kokoro](https://github.com/hexgrad/kokoro) TTS API server. Optional page summarization and custom prompts via Ollama on the same host.
+Reads web pages aloud using a local [Kokoro](https://github.com/hexgrad/kokoro) TTS API server. Summarization and AI chat via Llama.cpp, Ollama, or LM Studio serving any locally hosted AI model.
 
 ## Requirements
 
-- Kokoro TTS server (default `http://127.0.0.1:8880`)
-- For summarize / ask: Ollama on the same machine as Kokoro, port `11434`, with at least one text-generation model
-
-## Install (development)
-
-1. Open `about:debugging`
-2. **This Firefox** → **Load Temporary Add-on…**
-3. Select `page-tts-extension/manifest.json`
+- Selfhosted Kokoro TTS server running on any machine (default is `http://127.0.0.1:8880` and can point to your remote server like `https://tts.yourdomain.com`). Status of the servers are visible in the preference menu.
+- For summarize / AI chat : Choose either Llama.cpp, Ollama, or LM Studio served on any machine, with at least one capable GGUF AI model.
 
 ## Usage
 
-- **Toolbar popup:** playback controls, read page, summarize, voice and quality mode, IP1/IP2 switch
-- **Right-click:** read from selection, read page, summarize page
-- **Floating buttons** on pages (disabled on sites listed in Options → Excluded Sites)
-- **Options:** API URLs, defaults, summary model, excluded patterns
+- **Browser Toolbar popup:** playback controls, read page, summarize, voice selection and quality mode, Server1/Server2 switch. Supports 2 instances of Kokoro server for backup.
+- **Floating Control buttons** pop up on every pages (domains can be excluded/disabled in the preference tab→ Excluded Sites). Floating window can be disabled in preference menu.
+- **AI summerization:** User can choose between local AI model server which status is shown and automatically fetches available models.
 
 ## Features
 
 - Sentence-by-sentence TTS with prefetch
-- LAN / VPN (IP1 / IP2) auto-detection
+- Sever1 / Server2) selection in popup menu
 - Voices and modes: Fast, Balanced, Quality
-- In-page highlight while reading
-- Page summary and custom “ask page” prompts (Ollama)
-- Detachable popup window (pin control)
+- In-page word by word highlight while reading
+- Page summary and webpage AI chat
+- Detachable popup window
+- Dark mode for AI chat and Summary window
+- Font size control for Summary window
+- Expandable AI chat and Summary window
 
 ## Troubleshooting
 
-- **Offline:** confirm Kokoro is running and the correct IP1/IP2 is selected
-- **No audio:** check the browser console; try a short selection first
-- **Summarize fails:** confirm Ollama is reachable at `host:11434` from the machine running Kokoro
+- **TTS Offline:** The app uses the default 8880 port for kokoro TTS. Update if you are running on different port.
+- **Summerization Offline:** The app uses default ports for all AI model servers. Update if you are using different port number.
+
