@@ -1,46 +1,75 @@
-<svg width="128" height="128" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision">
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"> 
+  <defs> 
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"> 
+      <stop offset="0%" stop-color="#10B981"/> 
+      <stop offset="100%" stop-color="#059669"/> 
+    </linearGradient> 
+  </defs> 
 
-  <defs>
-    <!-- New warm-to-cool warning-style gradient -->
-    <linearGradient id="waveGradient" x1="200" y1="512" x2="824" y2="512" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#00C853"></stop>  <!-- green -->
-      <stop offset="35%" stop-color="#FFEB3B"></stop> <!-- yellow -->
-      <stop offset="65%" stop-color="#FF9800"></stop> <!-- orange -->
-      <stop offset="100%" stop-color="#F44336"></stop> <!-- red -->
-    </linearGradient>
+  <!-- Background --> 
+  <rect x="16" y="16" width="224" height="224" rx="48" fill="url(#g1)"/> 
 
-    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="6" result="blur"></feGaussianBlur>
-      <feMerge>
-        <feMergeNode in="blur"></feMergeNode>
-        <feMergeNode in="SourceGraphic"></feMergeNode>
-      </feMerge>
-    </filter>
-  </defs>
+  <!-- Circuit Traces (Thick, Black, L-shapes) --> 
+  <g stroke="black" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.95"> 
+    <!-- Left side --> 
+    <path d="M76 80 H56 V60"/> 
+    <path d="M76 110 H50"/> 
+    <path d="M76 140 H56 V160"/> 
+    <!-- Top side --> 
+    <path d="M100 60 V40 H80"/> 
+    <path d="M128 60 V30"/> 
+    <path d="M156 60 V40 H176"/> 
+    <!-- Bottom side --> 
+    <path d="M100 196 V216 H80"/> 
+    <path d="M128 196 V226"/> 
+    <path d="M156 196 V216 H176"/> 
+    <!-- Right side (New) --> 
+    <path d="M180 80 H200 V60"/> 
+    <path d="M180 110 H206"/> 
+    <path d="M180 140 H200 V160"/> 
+  </g> 
 
-  <!-- Background -->
-  <circle cx="512" cy="512" r="512" fill="#000000"></circle>
+  <!-- Outer Circles (Black) --> 
+  <g fill="black"> 
+    <!-- Top --> 
+    <circle cx="80" cy="40" r="7"/> 
+    <circle cx="128" cy="30" r="7"/> 
+    <circle cx="176" cy="40" r="7"/> 
+    <!-- Left --> 
+    <circle cx="56" cy="60" r="7"/> 
+    <circle cx="50" cy="110" r="7"/> 
+    <circle cx="56" cy="160" r="7"/> 
+    <!-- Bottom --> 
+    <circle cx="80" cy="216" r="7"/> 
+    <circle cx="128" cy="226" r="7"/> 
+    <circle cx="176" cy="216" r="7"/> 
+    <!-- Right --> 
+    <circle cx="200" cy="60" r="7"/> 
+    <circle cx="206" cy="110" r="7"/> 
+    <circle cx="200" cy="160" r="7"/> 
+  </g> 
 
-  <!-- Glow layer -->
-  <path d="M160 512
-       L300 512
-       C330 512, 340 400, 370 400
-       C400 400, 410 640, 440 640
-       C470 640, 480 320, 520 320
-       C560 320, 570 700, 610 700
-       C650 700, 660 420, 700 420
-       C740 420, 760 512, 800 512
-       L860 512" stroke="url(#waveGradient)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glow)" opacity="0.7"></path>
+  <!-- Inner Circles (Color removed) --> 
+  <g fill="white">
+    <circle cx="80" cy="40" r="3.5"/> 
+    <circle cx="128" cy="30" r="3.5"/> 
+    <circle cx="176" cy="40" r="3.5"/> 
+    <circle cx="56" cy="60" r="3.5"/> 
+    <circle cx="50" cy="110" r="3.5"/> 
+    <circle cx="56" cy="160" r="3.5"/> 
+    <circle cx="200" cy="60" r="3.5"/> 
+    <circle cx="206" cy="110" r="3.5"/> 
+    <circle cx="200" cy="160" r="3.5"/> 
+    <circle cx="80" cy="216" r="3.5"/> 
+    <circle cx="128" cy="226" r="3.5"/> 
+    <circle cx="176" cy="216" r="3.5"/> 
+  </g>
 
-  <!-- Main wave -->
-  <path d="M160 512
-       L300 512
-       C330 512, 340 400, 370 400
-       C400 400, 410 640, 440 640
-       C470 640, 480 320, 520 320
-       C560 320, 570 700, 610 700
-       C650 700, 660 420, 700 420
-       C740 420, 760 512, 800 512
-       L860 512" stroke="url(#waveGradient)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+  <!-- Web page (Centralized) --> 
+  <rect x="76" y="60" width="104" height="136" rx="14" fill="white" opacity="0.95"/> 
 
+  <!-- Waveform --> 
+  <g transform="translate(86, 110) scale(0.68)"> 
+    <path d="M49.05,15.88c0-1.42,1.15-2.57,2.57-2.57s2.57,1.15,2.57,2.57v29.6c0,1.42-1.15,2.57-2.57,2.57s-2.57-1.15-2.57-2.57V15.88z M73.83,15.88c0-1.42-1.15-2.57-2.57-2.57c-1.42,0-2.57,1.15-2.57,2.57v29.6c0,1.42,1.15,2.57,2.57,2.57c1.42,0,2.57-1.15,2.57-2.57V15.88z M122.88,9.46c0-1.42-1.14-2.56-2.53-2.56c-1.4,0-2.53,1.14-2.53,2.56v42.43c0,1.42,1.14,2.56,2.53,2.56c1.4,0,2.53-1.14,2.53-2.56V9.46z M113.11,2.57c0-1.42-1.15-2.57-2.57-2.57s-2.57,1.15-2.57,2.57v56.2c0,1.42,1.15,2.57,2.57,2.57s2.57-1.15,2.57-2.57V2.57z M83.65,21.66c0-1.42-1.15-2.57-2.57-2.57c-1.42,0-2.57,1.15-2.57,2.57v18.02c0,1.42,1.15,2.57,2.57,2.57c1.42,0,2.57-1.15,2.57-2.57V21.66z M93.46,15.88c0-1.42-1.15-2.57-2.57-2.57c-1.42,0-2.57,1.15-2.57,2.57v29.6c0,1.42,1.15,2.57,2.57,2.57c1.42,0,2.57-1.15,2.57-2.57V15.88z M103.25,9.46c0-1.42-1.14-2.56-2.53-2.56c-1.4,0-2.53,1.14-2.53,2.56v42.43c0,1.42,1.14,2.56,2.53,2.56c1.4,0,2.53-1.14,2.53-2.56V9.46z M0,9.46C0,8.05,1.14,6.9,2.53,6.9c1.4,0,2.53,1.14,2.53,2.56v42.43c0,1.42-1.14,2.56-2.53,2.56C1.13,54.45,0,53.3,0,51.89V9.46z M9.78,2.57C9.78,1.15,10.93,0,12.35,0c1.42,0,2.57,1.15,2.57,2.57v56.2c0,1.42-1.15,2.57-2.57,2.57c-1.42,0-2.57-1.15-2.57-2.57V2.57z M39.23,21.66c0-1.42,1.15-2.57,2.57-2.57c1.42,0,2.57,1.15,2.57,2.57v18.02c0,1.42-1.15,2.57-2.57,2.57c-1.42,0-2.57-1.15-2.57-2.57V21.66z M29.42,15.88c0-1.42,1.15-2.57,2.57-2.57c1.42,0,2.57,1.15,2.57,2.57v29.6c0,1.42-1.15,2.57-2.57,2.57c-1.42,0-2.57-1.15-2.57-2.57V15.88z M19.63,9.46c0-1.42,1.14-2.56,2.53-2.56c1.4,0,2.53,1.14,2.53,2.56v42.43c0,1.42-1.14,2.56-2.53,2.56c-1.4,0-2.53-1.14-2.53-2.56V9.46z M58.9,9.46c0-1.42,1.14-2.56,2.53-2.56c1.4,0,2.53,1.14,2.53,2.56v42.43c0,1.42-1.14,2.56-2.53,2.56c-1.4,0-2.53-1.14-2.53-2.56V9.46z" fill="#34D399"/> 
+  </g> 
 </svg>
